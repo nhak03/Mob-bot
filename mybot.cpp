@@ -33,7 +33,10 @@ int main() {
         }
 
         if(event.command.get_command_name() == "sup"){
-            event.reply("cuh!");
+            // event.reply("cuh!");
+            dpp::user who = event.command.get_issuing_user();
+            std::string rep = who.username + " sent this cmd";
+            event.reply(rep);
         }
 
         if(event.command.get_command_name() == "blep"){
@@ -63,8 +66,9 @@ int main() {
         }
     });
     
-    std::thread timerThread(timerTask);
+    std::thread timerThread(timerTask); // run something every x time, concurrently with the bot
     bot.start(dpp::st_wait);
+
 
     goodbye();
 
