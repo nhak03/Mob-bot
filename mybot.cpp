@@ -1,5 +1,6 @@
 #include <dpp/dpp.h>
 #include "mobster.cpp"
+#include <thread>
 using namespace std;
 
 const std::string    BOT_TOKEN    = "NjkyMDc0OTI3MjQ2OTM0MDM3.XnpPAA.ArATND3efgNt0OSJysPlnE94l2g";
@@ -7,10 +8,20 @@ const std::string    BOT_TOKEN    = "NjkyMDc0OTI3MjQ2OTM0MDM3.XnpPAA.ArATND3efgN
 // messy so far, just testing out certain methods before cleaning up and writing real functions
 // https://dpp.dev/build-a-discord-bot-windows-wsl.html
 
+void timerTask() {
+    while (true) {
+        // Do something every 15 seconds
+        std::cout << "Timer task: Do something!\n";
+
+        // Sleep for 15 seconds
+        std::this_thread::sleep_for(std::chrono::seconds(15));
+    }
+}
+
 int main() {
 
     hello();
-    goodbye();
+    
 
     dpp::cluster bot(BOT_TOKEN);
  
@@ -51,6 +62,11 @@ int main() {
             bot.global_command_create(newcommand);
         }
     });
- 
+    
+    std::thread timerThread(timerTask);
     bot.start(dpp::st_wait);
+
+    goodbye();
+
+    return 0;
 }
