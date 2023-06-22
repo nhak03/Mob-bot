@@ -19,7 +19,7 @@ pa8
 
 // Exported types -------------------------------------------------------------
 typedef std::string keyType;  // must be comparable using <, <=, >, >=, ==, !=
-typedef int         valType;
+typedef double         valType;
 
 class Dictionary{
 

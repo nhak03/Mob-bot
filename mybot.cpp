@@ -2,6 +2,7 @@
 #include<fstream>
 #include<vector>
 #include<iostream>
+#include<functional>
 #include "mobster.cpp"
 #include "Dictionary.h"
 #include "Dictionary.cpp" // include RBT structs to use
@@ -10,6 +11,7 @@
 using namespace std;
 
 const std::string    BOT_TOKEN    = "NjkyMDc0OTI3MjQ2OTM0MDM3.XnpPAA.ArATND3efgNt0OSJysPlnE94l2g";
+const double min_wage = 0.50;
  
 // messy so far, just testing out certain methods before cleaning up and writing real functions
 // https://dpp.dev/build-a-discord-bot-windows-wsl.html
@@ -17,10 +19,33 @@ const std::string    BOT_TOKEN    = "NjkyMDc0OTI3MjQ2OTM0MDM3.XnpPAA.ArATND3efgN
 void timerTask() {
     while (true) {
         // Do something every 15 seconds
-        std::cout << "Timer task: Do something!\n";
+        std::cout << "Timer task: wrote to file\n";
 
         // Sleep for 15 seconds
         std::this_thread::sleep_for(std::chrono::seconds(15));
+    }
+}
+
+// Function to write dictionary to a file
+void writeDictionaryToFile(const Dictionary& dict) {
+    std::ofstream file;
+    try{
+        file.open("userData.txt");
+        std::string data = dict.to_string();
+        file << data;
+        file.close();
+    }catch(logic_error& e){
+        // Handle file opening error
+        std::cout << "couldn't find file" << endl;
+    }
+}
+
+// Function to run the dictionary writing task every 15 seconds
+void writeTask(const Dictionary& dict) {
+    while (true) {
+        std::this_thread::sleep_for(std::chrono::seconds(15));
+        writeDictionaryToFile(dict);
+        cout << "Did a file save" << endl;
     }
 }
 
@@ -42,13 +67,15 @@ int main() {
 
     cout << "From txt file: " << txtLine << endl;
     
+    Dictionary userDict;
+    // user dict will load in users from memory 
 
 
     dpp::cluster bot(BOT_TOKEN);
  
     bot.on_log(dpp::utility::cout_logger());
  
-    bot.on_slashcommand([](const dpp::slashcommand_t& event) {
+    bot.on_slashcommand([&userDict](const dpp::slashcommand_t& event) {
         if (event.command.get_command_name() == "ping") {
             event.reply("Pong!");
         }
@@ -63,11 +90,30 @@ int main() {
         if(event.command.get_command_name() == "blep"){
             std::string param = std::get<std::string>(event.get_parameter("animal")); // reading parameter type
             std::int64_t amount = std::get<std::int64_t>(event.get_parameter("amount")); // reading parameter amount
-
             std::string am = std::to_string(amount); // converting to string so can output properly
             std::string rep = "You selected " + am;
             rep += " " + param;
             event.reply(rep);
+        }
+
+        if(event.command.get_command_name() == "work"){
+            // first use will register user - add them to database
+            // we can just setvalue since that already deals with nonexistent entry
+            dpp::user who = event.command.get_issuing_user();
+            std::string rep = who.username;
+            try{ // check to see if token exists
+                valType& value = userDict.getValue(rep);
+                // if it does, increment value
+                value += min_wage;
+                std::string msg = "@" + rep + " you earned 0.50\n";
+                msg += "you have " + std::to_string(value) + " in earnings"; 
+                event.reply(msg);
+            }catch(logic_error& e){
+                // if can't find, add it
+                userDict.setValue(rep, min_wage);
+                std::string msg = "@" + rep + " you earned 0.50 from your first hour\n";
+                event.reply(msg);
+            }
         }
     });
  
@@ -93,10 +139,13 @@ int main() {
                     set_max_value(100) // set maximum
             );
 
+            dpp::slashcommand work("work", "perform 1 hour of labor", bot.me.id);
+
             std::vector<dpp::slashcommand> new_comms;
             new_comms.push_back(ping);
             new_comms.push_back(sup);
             new_comms.push_back(blep);
+            new_comms.push_back(work);
 
             bot.global_bulk_command_create(new_comms);
 
@@ -105,7 +154,13 @@ int main() {
         }
     });
     
-    std::thread timerThread(timerTask); // run something every x time, concurrently with the bot
+    Dictionary& dict = userDict;
+
+    auto writeTaskWrapper = [&dict]() {
+        writeTask(dict);
+    };
+
+    std::thread timerThread(writeTaskWrapper); // run something every x time, concurrently with the bot
     bot.start(dpp::st_wait);
 
 

@@ -193,18 +193,19 @@ Dictionary::Node* Dictionary::search(Node* R, keyType k) const{
     }
     while(true){
         // if equal, return
-        if(k == temp->key){
+        int comp = k.compare(temp->key);
+        if(comp == 0){
             return temp;
         }
         // go left or right if not equal
-        if(k < temp->key){
+        if(comp < 0){
             if(temp->left == nil){
                 return nil;
             }
             temp = temp->left;
             continue;
         }
-        if(k > temp->key){
+        if(comp > 0){
             if(temp->right == nil){
                 return nil;
             }
