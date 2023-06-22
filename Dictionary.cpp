@@ -23,6 +23,10 @@ Dictionary::Node::Node(keyType k, valType v){
     parent = nullptr;
     key = k;
     val = v;
+    // could have an array to hold data points, i.e.
+    // double attrb[x]; (a for shorthand); x is amount of indexes needed for inventory stuffs
+    // a[0] = pocket, a[1] = bank, a[2] = guns, a[3] = associates
+    // a[4] = energy (max of 12), a[5] = prestige, a[6]
     color = black; // by default each inserted node is red
     // 0 for red, 1 for black
 }
@@ -385,6 +389,7 @@ void Dictionary::remove(keyType k){ // RB remove;
 }
 
 valType& Dictionary::getValue(keyType k) const{
+    std::lock_guard<std::mutex> lock(mtx);
     Node* N = search(root, k);
     if(N == nil){
         throw std::logic_error("called getValue(k) on non-existent k");
@@ -490,6 +495,7 @@ void Dictionary::insertFix(Node* z){
 
 void Dictionary::setValue(keyType k, valType v){
     // this handles case when dictionary is empty
+    std::lock_guard<std::mutex> lock(mtx);
     if(root == nil){
         // cout << "Inserted first value as root." << endl;
         root = new Node(k, v); // root parent, left and right default set to nil
@@ -662,7 +668,7 @@ void Dictionary::inOrderString(std::string& s, Node* R) const{
     // string v = std::to_string(R->val);
     // s = s + R->key + " : " + v + "\n";
     string v =  std::to_string(R->val);
-    string toAdd = R->key + " : " + v + "\n";
+    string toAdd = R->key + ": " + v + "0 0 0 0 0 0 0 0 0 0" + "\n";
     s+= toAdd;
     // s += R->key; s+= " : "; s+= v; s+= "\n";
     // s.append(toAdd);

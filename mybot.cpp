@@ -16,16 +16,6 @@ const double min_wage = 0.50;
 // messy so far, just testing out certain methods before cleaning up and writing real functions
 // https://dpp.dev/build-a-discord-bot-windows-wsl.html
 
-void timerTask() {
-    while (true) {
-        // Do something every 15 seconds
-        std::cout << "Timer task: wrote to file\n";
-
-        // Sleep for 15 seconds
-        std::this_thread::sleep_for(std::chrono::seconds(15));
-    }
-}
-
 // Function to write dictionary to a file
 void writeDictionaryToFile(const Dictionary& dict) {
     std::ofstream file;
@@ -52,24 +42,49 @@ void writeTask(const Dictionary& dict) {
 int main() {
 
     hello();
-    std::string txtLine = "";
 
     ifstream inputFile;
-    try{
-        inputFile.open("test.txt", ios::in);
-        getline(inputFile, txtLine);
+    size_t begin, end, len;
+    string line;
+    string tokenBuffer;
+    string token;
+    string delim = " \t\\\"\',<>/?;:[{]}|`~!@%#$^&*()-_=+";
+    Dictionary userDict;
 
+    try{
+        inputFile.open("userData.txt", ios::in);
+        string first;
+        bool first_Set = false;
+        while(getline(inputFile, line)){
+            len = line.length();
+            cout << "Processing this line: " << line << endl;
+            // get first token
+            begin = min(line.find_first_not_of(delim, 0), len);
+            end   = min(line.find_first_of(delim, begin), len);
+            token = line.substr(begin, end-begin);
+            if(first_Set == false){
+                first = token;
+                first_Set = true;
+            }
+            while( token!="" ){  // we have a token
+                try{
+                    double doub = std::stod(token);
+                    cout << "assoc w/ " << first << endl;
+                    cout << doub << ", ";
+                }catch(logic_error& e){
+                    cout << "User " << token << ": ";
+                    // first token is a username, do not add
+                }
+            begin = min(line.find_first_not_of(delim, end+1), len);
+            end   = min(line.find_first_of(delim, begin), len);
+            token = line.substr(begin, end-begin);
+            }
+            first_Set = false;
+        }
         inputFile.close();
-    }
-    catch(logic_error& e){
+    }catch(logic_error& e){
         std::cout << "File not found" << endl;
     }
-
-    cout << "From txt file: " << txtLine << endl;
-    
-    Dictionary userDict;
-    // user dict will load in users from memory 
-
 
     dpp::cluster bot(BOT_TOKEN);
  
@@ -160,11 +175,10 @@ int main() {
         writeTask(dict);
     };
 
-    std::thread timerThread(writeTaskWrapper); // run something every x time, concurrently with the bot
-    bot.start(dpp::st_wait);
+    cout << "The dict: \n" << userDict << endl;
 
-
-    goodbye();
+    //std::thread timerThread(writeTaskWrapper); // run something every x time, concurrently with the bot
+    //bot.start(dpp::st_wait);
 
     return 0;
 }

@@ -24,7 +24,7 @@ typedef double         valType;
 class Dictionary{
 
 private:
-
+   mutable std::mutex mtx;
    // private Node struct
    struct Node{
       // Node fields
