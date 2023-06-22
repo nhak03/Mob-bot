@@ -1,5 +1,11 @@
 #include <dpp/dpp.h>
+#include<fstream>
+#include<vector>
+#include<iostream>
 #include "mobster.cpp"
+#include "Dictionary.h"
+#include "Dictionary.cpp" // include RBT structs to use
+
 #include <thread>
 using namespace std;
 
@@ -21,7 +27,22 @@ void timerTask() {
 int main() {
 
     hello();
+    std::string txtLine = "";
+
+    ifstream inputFile;
+    try{
+        inputFile.open("test.txt", ios::in);
+        getline(inputFile, txtLine);
+
+        inputFile.close();
+    }
+    catch(logic_error& e){
+        std::cout << "File not found" << endl;
+    }
+
+    cout << "From txt file: " << txtLine << endl;
     
+
 
     dpp::cluster bot(BOT_TOKEN);
  
@@ -34,24 +55,30 @@ int main() {
 
         if(event.command.get_command_name() == "sup"){
             // event.reply("cuh!");
-            dpp::user who = event.command.get_issuing_user();
-            std::string rep = who.username + " sent this cmd";
+            dpp::user who = event.command.get_issuing_user(); // this is how to get a user obj
+            std::string rep = who.username + " sent this cmd"; // this is username from user class
             event.reply(rep);
         }
 
         if(event.command.get_command_name() == "blep"){
-            string param = std::get<std::string>(event.get_parameter("animal"));
-            event.reply(param);
+            std::string param = std::get<std::string>(event.get_parameter("animal")); // reading parameter type
+            std::int64_t amount = std::get<std::int64_t>(event.get_parameter("amount")); // reading parameter amount
+
+            std::string am = std::to_string(amount); // converting to string so can output properly
+            std::string rep = "You selected " + am;
+            rep += " " + param;
+            event.reply(rep);
         }
     });
  
     bot.on_ready([&bot](const dpp::ready_t& event) {
+        // in this on_ready block, shows how to create commands,
+        // thier descriptions, 
         if (dpp::run_once<struct register_bot_commands>()) {
-            bot.global_command_create(dpp::slashcommand ("ping", "Ping pong!", bot.me.id));
-            bot.global_command_create(dpp::slashcommand ("sup", "greeting", bot.me.id));
-            
-            dpp::slashcommand newcommand("blep", "Send a random adorable animal photo", bot.me.id);
-            newcommand.add_option(
+            dpp::slashcommand ping("ping", "Ping pong!", bot.me.id);
+            dpp::slashcommand sup("sup", "greeting", bot.me.id);
+            dpp::slashcommand blep("blep", "request x animals", bot.me.id);
+            blep.add_option(
                     dpp::command_option(dpp::co_string, "animal", "The type of animal", true).
                         add_choice(dpp::command_option_choice("Dog", std::string("animal_dog"))).
                         add_choice(dpp::command_option_choice("Cat", std::string("animal_cat"))).
@@ -59,10 +86,22 @@ int main() {
                     )
                 )
             );
+            // this adds an amount parameter: x from min-max_range
+            blep.add_option(
+                dpp::command_option(dpp::co_integer, "amount", "amount you want", true).
+                    set_min_value(1). // set minimum
+                    set_max_value(100) // set maximum
+            );
 
- 
+            std::vector<dpp::slashcommand> new_comms;
+            new_comms.push_back(ping);
+            new_comms.push_back(sup);
+            new_comms.push_back(blep);
+
+            bot.global_bulk_command_create(new_comms);
+
             /* Register the command */
-            bot.global_command_create(newcommand);
+            //bot.global_command_create(blep); // registers the command with discord
         }
     });
     
