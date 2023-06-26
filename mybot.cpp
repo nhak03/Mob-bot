@@ -12,6 +12,7 @@ using namespace std;
 
 const std::string    BOT_TOKEN    = "NjkyMDc0OTI3MjQ2OTM0MDM3.XnpPAA.ArATND3efgNt0OSJysPlnE94l2g";
 const double min_wage = 0.50;
+const double val_hold = -3.1415;
  
 // messy so far, just testing out certain methods before cleaning up and writing real functions
 // https://dpp.dev/build-a-discord-bot-windows-wsl.html
@@ -39,6 +40,16 @@ void writeTask(const Dictionary& dict) {
     }
 }
 
+void createEntry(Dictionary& dict, std::string username){
+    // if a new user is being added, create entry for them
+    // and initialize all inventory elems to 0
+    dict.setValue(username, val_hold);
+    valType* inventory = dict.getArray(username);
+    for(int i=0; i<13; i++){
+        inventory[i] = 0;
+    }
+}
+
 int main() {
 
     hello();
@@ -57,7 +68,7 @@ int main() {
         bool first_Set = false;
         while(getline(inputFile, line)){
             len = line.length();
-            cout << "Processing this line: " << line << endl;
+            // cout << "Processing this line: " << line << endl;
             // get first token
             begin = min(line.find_first_not_of(delim, 0), len);
             end   = min(line.find_first_of(delim, begin), len);
@@ -71,14 +82,14 @@ int main() {
             while( token!="" ){  // we have a token
                 try{
                     double doub = std::stod(token);
-                    cout << doub << " assoc w/ " << first << endl;
-                    if(doub != -3.14){
+                    // cout << doub << " assoc w/ " << first << endl;
+                    if(doub != val_hold){
                         inventory[index] = doub;
                         index++;
                     }
                 }catch(logic_error& e){
-                    cout << "User " << token << ": ";
-                    userDict.setValue(token, -3.14);
+                    // cout << "User " << token << ": ";
+                    userDict.setValue(token, val_hold);
                     inventory = userDict.getArray(token);
                     // -3.14 is our junk holder data
                     // first token is a username, do not add
@@ -88,12 +99,21 @@ int main() {
             token = line.substr(begin, end-begin);
             }
             first_Set = false; // use to reset once we get to next line (each line is one user)
-            cout << "Last index of " << first << " " << inventory[index-1] << endl;
+            // cout << "Middle index of " << first << " " << inventory[5] << endl; 
+            // cout << "Last index of " << first << " " << inventory[index-1] << endl;
+            // inventory[index-1] = 20;
+            // cout << "Changing last index to " << inventory[index-1] << endl;
+            // for(int i=0; i<13; i++){
+            //     cout << inventory[i] << " ";
+            // } cout << endl;
         }
         inputFile.close();
     }catch(logic_error& e){
         std::cout << "File not found" << endl;
     }
+
+    // cout << "Reading the dictionary" << endl;
+    // cout << userDict << endl;
 
     dpp::cluster bot(BOT_TOKEN);
  
@@ -126,16 +146,20 @@ int main() {
             dpp::user who = event.command.get_issuing_user();
             std::string rep = who.username;
             try{ // check to see if token exists
-                valType& value = userDict.getValue(rep);
+                // valType& value = userDict.getValue(rep);
                 // if it does, increment value
-                value = -3.1415;
-                std::string msg = "@" + rep + " you earned 0.50\n";
-                msg += "you have " + std::to_string(value) + " in earnings"; 
+                valType* valarray = userDict.getArray(rep);
+                valarray[0] += min_wage;
+                std::string msg = "@" + rep + " you earned " + to_string(min_wage);
+                msg += " you have " + std::to_string(valarray[0]) + " in earnings"; 
                 event.reply(msg);
             }catch(logic_error& e){
                 // if can't find, add it
-                userDict.setValue(rep, min_wage);
-                std::string msg = "@" + rep + " you earned 0.50 from your first hour\n";
+                createEntry(userDict, rep);
+                // userDict.setValue(rep, val_hold); // create user entry
+                valType* valarray = userDict.getArray(rep); // since array will be uninitialized, do that here
+                valarray[0] = min_wage;
+                std::string msg = "@" + rep + " you earned " +  to_string(min_wage) + " from your first hour\n";
                 event.reply(msg);
             }
         }
@@ -178,16 +202,16 @@ int main() {
         }
     });
     
-    // Dictionary& dict = userDict;
+    Dictionary& dict = userDict;
 
-    // auto writeTaskWrapper = [&dict]() {
-    //     writeTask(dict);
-    // };
+    auto writeTaskWrapper = [&dict]() {
+        writeTask(dict);
+    };
 
-    // cout << "The dict: \n" << userDict << endl;
+    cout << "The dict: \n" << userDict << endl;
 
-    //std::thread timerThread(writeTaskWrapper); // run something every x time, concurrently with the bot
-    //bot.start(dpp::st_wait);
+    std::thread timerThread(writeTaskWrapper); // run something every x time, concurrently with the bot
+    bot.start(dpp::st_wait);
 
     return 0;
 }

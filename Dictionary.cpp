@@ -677,7 +677,12 @@ void Dictionary::inOrderString(std::string& s, Node* R) const{
     // string v = std::to_string(R->val);
     // s = s + R->key + " : " + v + "\n";
     string v =  std::to_string(R->val);
-    string toAdd = R->key + ": " + v + "0 0 0 0 0 0 0 0 0 0" + "\n";
+    string arr = "";
+    for(int i=0; i<13; i++){
+        arr += std::to_string(R->inventory[i]) + " ";
+    }
+    arr.pop_back(); // erase trailing space
+    string toAdd = R->key + ": " + v + " " + arr + "\n";
     s+= toAdd;
     // s += R->key; s+= " : "; s+= v; s+= "\n";
     // s.append(toAdd);
