@@ -48,7 +48,7 @@ int main() {
     string line;
     string tokenBuffer;
     string token;
-    string delim = " \t\\\"\',<>/?;:[{]}|`~!@%#$^&*()-_=+";
+    string delim = " \t\\\"\',<>/?;:[{]}|`~!@%#$^&*()_=+";
     Dictionary userDict;
 
     try{
@@ -66,20 +66,29 @@ int main() {
                 first = token;
                 first_Set = true;
             }
+            int index = 0;
+            valType* inventory;
             while( token!="" ){  // we have a token
                 try{
                     double doub = std::stod(token);
-                    cout << "assoc w/ " << first << endl;
-                    cout << doub << ", ";
+                    cout << doub << " assoc w/ " << first << endl;
+                    if(doub != -3.14){
+                        inventory[index] = doub;
+                        index++;
+                    }
                 }catch(logic_error& e){
                     cout << "User " << token << ": ";
+                    userDict.setValue(token, -3.14);
+                    inventory = userDict.getArray(token);
+                    // -3.14 is our junk holder data
                     // first token is a username, do not add
                 }
             begin = min(line.find_first_not_of(delim, end+1), len);
             end   = min(line.find_first_of(delim, begin), len);
             token = line.substr(begin, end-begin);
             }
-            first_Set = false;
+            first_Set = false; // use to reset once we get to next line (each line is one user)
+            cout << "Last index of " << first << " " << inventory[index-1] << endl;
         }
         inputFile.close();
     }catch(logic_error& e){
@@ -119,7 +128,7 @@ int main() {
             try{ // check to see if token exists
                 valType& value = userDict.getValue(rep);
                 // if it does, increment value
-                value += min_wage;
+                value = -3.1415;
                 std::string msg = "@" + rep + " you earned 0.50\n";
                 msg += "you have " + std::to_string(value) + " in earnings"; 
                 event.reply(msg);
@@ -169,13 +178,13 @@ int main() {
         }
     });
     
-    Dictionary& dict = userDict;
+    // Dictionary& dict = userDict;
 
-    auto writeTaskWrapper = [&dict]() {
-        writeTask(dict);
-    };
+    // auto writeTaskWrapper = [&dict]() {
+    //     writeTask(dict);
+    // };
 
-    cout << "The dict: \n" << userDict << endl;
+    // cout << "The dict: \n" << userDict << endl;
 
     //std::thread timerThread(writeTaskWrapper); // run something every x time, concurrently with the bot
     //bot.start(dpp::st_wait);

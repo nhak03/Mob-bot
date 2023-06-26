@@ -12,6 +12,7 @@ pa8
 #include<iostream>
 #include<string>
 #include <sstream>
+#include<mutex>
 
 #ifndef DICTIONARY_H_INCLUDE_
 #define DICTIONARY_H_INCLUDE_
@@ -30,6 +31,7 @@ private:
       // Node fields
       keyType key;
       valType val;
+      valType inventory[13];
       Node* parent;
       Node* left;
       Node* right;
@@ -138,6 +140,11 @@ public:
    // Returns a reference to the value corresponding to key k.
    // Pre: contains(k)
    valType& getValue(keyType k) const;
+
+   // getArray()
+   // returns a pointer to the array corresponding to key k
+   // pre: contains(k)
+   valType* getArray(keyType k) const;
 
    // hasCurrent()
    // Returns true if the current iterator is defined, and returns false 

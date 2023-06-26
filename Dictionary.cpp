@@ -397,6 +397,15 @@ valType& Dictionary::getValue(keyType k) const{
     return N->val;
 }
 
+valType* Dictionary::getArray(keyType k) const{
+    std::lock_guard<std::mutex> lock(mtx);
+    Node* N = search(root, k);
+    if(N == nil){
+        throw std::logic_error("called getArray(k) on non-existent k");
+    }
+    return N->inventory;
+}
+
 void Dictionary::leftRotate(Node* x){
    // set y
    Node* y = x->right; 
