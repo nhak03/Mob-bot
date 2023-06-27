@@ -31,7 +31,7 @@ private:
       // Node fields
       keyType key;
       valType val;
-      valType inventory[13];
+      valType inventory[15];
       Node* parent;
       Node* left;
       Node* right;
