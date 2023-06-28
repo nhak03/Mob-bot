@@ -48,6 +48,13 @@ void createEntry(Dictionary& dict, std::string username){
     }
 }
 
+std::string doub_to_str(double x){
+    std::ostringstream p;
+    p << std::fixed << std::setprecision(2) << x;
+    std::string pock = p.str();
+    return pock;
+}
+
 int main() {
 
     hello();
@@ -145,6 +152,33 @@ int main() {
             }catch(logic_error& e){
                 createEntry(userDict, who.username);
                 std::string response = who.get_mention() + " you have $0 to your name.";
+                event.reply(response);
+            }
+        }
+
+        if(event.command.get_command_name() == "inventory"){
+            dpp::user who = event.command.get_issuing_user();
+            try{
+                valType* valarray = userDict.getArray(who.username);
+                std::ostringstream output;
+                std::string pocket = doub_to_str(valarray[0]);
+                std::string bank = doub_to_str(valarray[1]);
+                std::string guns = std::to_string(static_cast<int>(valarray[2]));
+                std::string associates = std::to_string(static_cast<int>(valarray[3]));
+                std::string stills = "xx";
+                std::string moonshine = "xx";
+                std::string speaks = "xx";
+                std::string casinos = "xx";
+                std::string response = who.get_mention() + " this is what you have: ```";
+                output << std::left << std::setw(12) << "Cash: " << std::setw(15) << pocket << std::setw(15) << "Stills: " << stills << std::endl;
+                output << std::left << std::setw(12) << "Bank: " << std::setw(15) << bank << std::setw(15) << "Moonshine: " << moonshine << std::endl;
+                output << std::left << std::setw(12) << "Guns: " << std::setw(15) << guns << std::setw(15) << "Speaks': " << speaks << std::endl;
+                output << std::left << std::setw(12) << "Associates: " << std::setw(15) << associates << std::setw(15) << "Casinos: " << casinos << std::endl;
+                response += output.str() + "```";
+                event.reply(response);
+            }catch(logic_error& e){
+                createEntry(userDict, who.username);
+                std::string response = who.get_mention() + " you have nothing to your name.";
                 event.reply(response);
             }
         }
@@ -265,17 +299,12 @@ int main() {
             dpp::slashcommand inventory("inventory", "shows what you own", bot.me.id);
 
             std::vector<dpp::slashcommand> new_comms;
-            // new_comms.push_back(ping);
-            // new_comms.push_back(sup);
-            // new_comms.push_back(blep);
             new_comms.push_back(work);
             new_comms.push_back(buy);
             new_comms.push_back(bal);
+            new_comms.push_back(inventory);
 
-            bot.global_bulk_command_create(new_comms);
-
-            /* Register the command */
-            //bot.global_command_create(blep); // registers the command with discord
+            // bot.global_bulk_command_create(new_comms);
         }
     });
     
