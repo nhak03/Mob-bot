@@ -165,7 +165,7 @@ int main() {
                 std::string bank = doub_to_str(valarray[1]);
                 std::string guns = std::to_string(static_cast<int>(valarray[2]));
                 std::string associates = std::to_string(static_cast<int>(valarray[3]));
-                std::string stills = "xx";
+                std::string stills = std::to_string(static_cast<int>(valarray[4]));
                 std::string moonshine = "xx";
                 std::string speaks = "xx";
                 std::string casinos = "xx";
@@ -187,6 +187,14 @@ int main() {
             // first use will register user - add them to database
             // we can just setvalue since that already deals with nonexistent entry
             dpp::user who = event.command.get_issuing_user();
+            std::string labor_type;
+            std::variant<monostate, string, long int, bool, dpp::snowflake, double> laborVariant = event.get_parameter("labor");
+            try{
+                labor_type = std::get<std::string>(laborVariant);
+            }catch(const std::bad_variant_access& ex){
+                labor_type = "default";
+            }
+            cout << "User selected: " << labor_type << endl;
             // std::string rep = who.username;
             try{ // check to see if token exists
                 // valType& value = userDict.getValue(rep);
@@ -218,6 +226,7 @@ int main() {
             std::string am = std::to_string(amount); // converting to string so can output properly
             dpp::user who = event.command.get_issuing_user();
             double total_cost = calc_cost(param, amount);
+            double assoc_cost = assoc_check(param, amount);
             std::ostringstream oss;
             oss << std::fixed << std::setprecision(2) << total_cost;
             std::string cost = oss.str();
@@ -228,8 +237,13 @@ int main() {
                     std::string response = who.get_mention() + " you could not afford that purchase\n";
                     response += "Ordered: " + am + " " + param + " || " + "Cost: $" + cost;
                     event.reply(response);
+                    return;
                 }
-                else{
+                if((valarray[3] - assoc_cost) < 0){ // if insufficient associates
+                    std::string response = who.get_mention() + " you need more associates to run that\n";
+                    response += "Ordered: " + am + " " + param;
+                    event.reply(response);
+                }else{
                     if((valarray[0]-total_cost) >= 0){
                         // if cost can be subbed from pocket without negative, do it
                         valarray[0] -= total_cost;
@@ -239,7 +253,8 @@ int main() {
                         total_cost -= valarray[0];
                         valarray[0] = 0;
                         valarray[1] -= total_cost;
-                    }
+                    } // end of money payment methods
+
                     if(param == "item_gun"){
                         valarray[2] += amount;
                     }
@@ -259,7 +274,11 @@ int main() {
                             return;
                         }
                     }
-                    cout << "testing if event.reply is like a return\n";
+                    if(param == "item_still"){
+                        valarray[3] -= assoc_cost; //
+                        valarray[4] += amount;
+                    }
+                    // cout << "testing if event.reply is like a return\n";
                     std::string response = who.get_mention() + " you bought " + am + " " + param + " for $" + std::to_string(total_cost); 
                     event.reply(response);
                 }
@@ -295,6 +314,10 @@ int main() {
             );
 
             dpp::slashcommand work("work", "perform 1 hour of labor", bot.me.id);
+            work.add_option(
+                dpp::command_option(dpp::co_string, "labor", "kind of labor", false).
+                add_choice(dpp::command_option_choice("Distill", std::string("distill")))
+            );
             dpp::slashcommand bal("bal", "shows your balance", bot.me.id);
             dpp::slashcommand inventory("inventory", "shows what you own", bot.me.id);
 
