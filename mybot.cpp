@@ -110,14 +110,7 @@ int main() {
             end   = min(line.find_first_of(delim, begin), len);
             token = line.substr(begin, end-begin);
             }
-            first_Set = false; // use to reset once we get to next line (each line is one user)
-            // cout << "Middle index of " << first << " " << inventory[5] << endl; 
-            // cout << "Last index of " << first << " " << inventory[index-1] << endl;
-            // inventory[index-1] = 20;
-            // cout << "Changing last index to " << inventory[index-1] << endl;
-            // for(int i=0; i<13; i++){
-            //     cout << inventory[i] << " ";
-            // } cout << endl;
+            first_Set = false; 
         }
         inputFile.close();
     }catch(logic_error& e){
@@ -314,13 +307,13 @@ int main() {
                 // index 0 is pocket balance, 1 is bank balance
                 if((valarray[0] + valarray[1]) - total_cost < 0){ // if you can't afford
                     std::string response = who.get_mention() + " you could not afford that purchase\n";
-                    response += "Ordered: " + am + " " + param + " || " + "Cost: $" + cost;
+                    response += "Ordered: " + am + " " + param + " || Cost: $" + cost;
                     event.reply(response);
                     return;
                 }
                 if((valarray[3] - assoc_cost) < 0){ // if insufficient associates
                     std::string response = who.get_mention() + " you need more associates to run that\n";
-                    response += "Ordered: " + am + " " + param;
+                    response += "Ordered: " + am + " " + param + " || Need " + to_string(static_cast<int>(assoc_cost)) + " associates";
                     event.reply(response);
                 }else{
                     if((valarray[0]-total_cost) >= 0){
@@ -357,6 +350,12 @@ int main() {
                         valarray[3] -= assoc_cost; //
                         valarray[4] += amount;
                     }
+                    if(param == "item_speaks"){
+                        valarray[3] -= assoc_cost;
+                        valarray[6] += amount;
+                        // [6] for base, [7] for tier 1, [8] for tier 2, [9] for tier 3
+                    }
+
                     // cout << "testing if event.reply is like a return\n";
                     std::string response = who.get_mention() + " you bought " + am + " " + param + " for $" + std::to_string(total_cost); 
                     event.reply(response);
@@ -373,6 +372,36 @@ int main() {
 
             
         }
+
+        if(event.command.get_command_name() == "edit"){
+            // int param = std::get<long int>(event.get_parameter("item"));
+            // double amount = std::get<double>(event.get_parameter("amount"));
+            // std::string response = "You selected " + to_string(param) + "\n Will change value stored there to " + doub_to_str(amount);
+            // event.reply(response);
+            dpp::user who = event.command.get_issuing_user();
+            if(who.username == "dajujumaster"){
+                int param = std::get<long int>(event.get_parameter("item"));
+                double amount = std::get<double>(event.get_parameter("amount"));
+                std::variant<monostate, string, long int, bool, dpp::snowflake, double> viewUser = event.get_parameter("user");
+                try{
+                    dpp::snowflake temp = std::get<dpp::snowflake>(viewUser);
+                    who = event.command.get_resolved_user(temp);
+                }catch(const std::bad_variant_access& ex){
+                    event.reply("Could not find that user");
+                    return;
+                }
+                valType* valarray = userDict.getArray(who.username);
+                double old_val = valarray[param];
+                valarray[param] = amount;
+                std::string response = "Changed " + who.get_mention() + "[" + to_string(param) + "]" + " from ";
+                response += doub_to_str(old_val) + " to " + doub_to_str(amount);
+                event.reply(response);
+            }
+            else{
+                event.reply("You do not have sufficient permissions to use this.");
+            }
+
+        }
     });
  
     bot.on_ready([&bot](const dpp::ready_t& event) {
@@ -385,7 +414,8 @@ int main() {
                 dpp::command_option(dpp::co_string, "item", "type of item", true).
                 add_choice(dpp::command_option_choice("Gun", std::string("item_gun"))).
                 add_choice(dpp::command_option_choice("Associate", std::string("item_assoc"))).
-                add_choice(dpp::command_option_choice("Moonshine Still", std::string("item_still")))
+                add_choice(dpp::command_option_choice("Moonshine Still", std::string("item_still"))).
+                add_choice(dpp::command_option_choice("Speakeasy", std::string("item_speaks")))
             );
             buy.add_option(
                 dpp::command_option(dpp::co_integer, "amount", "purchase x item(s)", true).
@@ -414,12 +444,26 @@ int main() {
                 set_min_value(0.01)
             );
 
+            dpp::slashcommand edit("edit", "edit user's inventory, admin use only", bot.me.id);
+            edit.add_option(
+                dpp::command_option(dpp::co_user, "user", "user to edit", true)
+            );
+            edit.add_option(
+                dpp::command_option(dpp::co_integer, "item", "item to edit", true).
+                add_choice(dpp::command_option_choice("Cash", int(0))).
+                add_choice(dpp::command_option_choice("Bank", int(1)))
+            );
+            edit.add_option(
+                dpp::command_option(dpp::co_number, "amount", "amount to set to", true)
+            );
+
             std::vector<dpp::slashcommand> new_comms;
             new_comms.push_back(work);
             new_comms.push_back(buy);
             new_comms.push_back(bal);
             new_comms.push_back(inventory);
             new_comms.push_back(pay);
+            new_comms.push_back(edit);
 
             // bot.global_bulk_command_create(new_comms);
         }
@@ -431,7 +475,7 @@ int main() {
         writeTask(dict);
     };
 
-    cout << "The dict: \n" << userDict << endl;
+    // cout << "The dict: \n" << userDict << endl;
 
     std::thread timerThread(writeTaskWrapper); // run something every x time, concurrently with the bot
     bot.start(dpp::st_wait);
