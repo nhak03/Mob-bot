@@ -164,17 +164,13 @@ int main() {
                 std::variant<monostate, string, long int, bool, dpp::snowflake, double> viewUser = event.get_parameter("admin");
                 try{
                     // if succeeded we lookup their inventory
-                    cout << "In the try\n";
                     dpp::snowflake temp = std::get<dpp::snowflake>(viewUser);
-                    cout << "We found a snowflake\n";
                     dpp::user temp_user = event.command.get_resolved_user(temp);
-                    cout << "We found a user pointer\n";
                     user_name = temp_user.username;
                     who = temp_user;
-                    cout << "user we want to see: " << user_name << endl;
                 }catch(const std::bad_variant_access& ex){
                     // if fail, just look at our own
-                    cout << "in the catch\n";
+                    // cout << "in the catch\n";
                     user_name = "dajujumaster";
                 }
             }
@@ -242,6 +238,58 @@ int main() {
                     event.reply(msg);
                 }
                 return;
+            }
+
+        }
+
+        if(event.command.get_command_name() == "pay"){
+            dpp::user sender = event.command.get_issuing_user();
+            double amount = std::get<double>(event.get_parameter("amount"));
+            std::variant<monostate, string, long int, bool, dpp::snowflake, double> recieve = event.get_parameter("user");
+            dpp::user reciever;
+            try{ // this try and catch block is to find the user to send money to
+                // try to get a user obj
+                dpp::snowflake temp = std::get<dpp::snowflake>(recieve);
+                reciever = event.command.get_resolved_user(temp);
+            }catch(const std::bad_variant_access& ex){
+                // if fail, just look at our own
+                // send fail message
+                event.reply("Could not find that user to send money to.");
+                return;
+            }
+
+            // this try and catch block is for inventory lookup for sender
+            valType* senderArr; valType* recieverArr;
+            try{
+                senderArr = userDict.getArray(sender.username);
+                if((senderArr[0] + senderArr[1]) < amount){
+                    event.reply("You don't have enough money to send that amount.");
+                    return;
+                }
+            }catch(logic_error& e){
+                createEntry(userDict, sender.username);
+                event.reply("You don't have enough money to send that amount.");
+                return;
+            }
+
+            // this try and catch block is inventory lookup for reciever
+            try{
+                recieverArr = userDict.getArray(reciever.username);
+            }catch(logic_error& e){
+                createEntry(userDict, reciever.username);
+                recieverArr = userDict.getArray(reciever.username);
+            }
+
+            recieverArr[0] += amount; // send money to reciever
+            std::string response = "You've sent $" + doub_to_str(amount) + " to " + reciever.get_mention();
+            event.reply(response);
+
+            if(senderArr[0] - amount >= 0){ // if can subtract from pocket fully, do so
+                senderArr[0] -= amount;
+            }else{
+                amount -= senderArr[0];
+                senderArr[0] = 0;
+                senderArr[1] -= amount;
             }
 
         }
@@ -349,10 +397,21 @@ int main() {
                 dpp::command_option(dpp::co_string, "labor", "kind of labor", false).
                 add_choice(dpp::command_option_choice("Distill", std::string("distill")))
             );
+
             dpp::slashcommand bal("bal", "shows your balance", bot.me.id);
+
             dpp::slashcommand inventory("inventory", "shows what you own", bot.me.id);
             inventory.add_option(
-                dpp::command_option(dpp::co_user, "admin", "admin user only", false)
+                dpp::command_option(dpp::co_user, "admin", "admin user only, does nothing if not admin", false)
+            );
+
+            dpp::slashcommand pay("pay", "pay another user", bot.me.id);
+            pay.add_option(
+                dpp::command_option(dpp::co_user, "user", "send money to this user", true)
+            );
+            pay.add_option(
+                dpp::command_option(dpp::co_number, "amount", "amount of cash to send", true).
+                set_min_value(0.01)
             );
 
             std::vector<dpp::slashcommand> new_comms;
@@ -360,6 +419,7 @@ int main() {
             new_comms.push_back(buy);
             new_comms.push_back(bal);
             new_comms.push_back(inventory);
+            new_comms.push_back(pay);
 
             // bot.global_bulk_command_create(new_comms);
         }
