@@ -2,6 +2,7 @@
 #include<fstream>
 #include<vector>
 #include<iostream>
+#include<random>
 #include<functional>
 #include "mobster.cpp"
 #include "Dictionary.h"
@@ -139,8 +140,8 @@ int main() {
                 b << std::fixed << std::setprecision(2) << bank;
                 std::string banc = b.str();
                 std::string response = who.get_mention() + " you have\n";
-                response += "$" + pock + " in your pocket\n";
-                response += "$" + banc + " in your bank account";
+                response += "$`" + pock + "` in your pocket\n";
+                response += "$`" + banc + "` in your bank account";
                 event.reply(response);
             }catch(logic_error& e){
                 createEntry(userDict, who.username);
@@ -177,7 +178,9 @@ int main() {
                 std::string associates = std::to_string(static_cast<int>(valarray[3]));
                 std::string stills = std::to_string(static_cast<int>(valarray[4]));
                 std::string moonshine = doub_to_str(valarray[5]);
-                std::string speaks = "xx";
+                double speak_tot = valarray[6] + valarray[7];
+                speak_tot += valarray[8]; speak_tot+= valarray[9];
+                std::string speaks = std::to_string(static_cast<int>(speak_tot));
                 std::string casinos = "xx";
                 std::string response = who.get_mention() + "'s Inventory: ```";
                 output << std::left << std::setw(12) << "Cash: " << std::setw(15) << pocket << std::setw(15) << "Stills: " << stills << std::endl;
@@ -215,8 +218,8 @@ int main() {
             }
             if(labor_type == "default"){
                 valarray[0] += min_wage;
-                std::string msg = who.get_mention() + " you earned " + to_string(min_wage);
-                msg += " you have " + std::to_string(valarray[0]) + " in earnings"; 
+                std::string msg = who.get_mention() + " you earned $" + doub_to_str(min_wage);
+                msg += "\nyou have $" + doub_to_str(valarray[0]) + " in earnings"; 
                 event.reply(msg);
                 return;
             }
@@ -285,6 +288,69 @@ int main() {
                 senderArr[1] -= amount;
             }
 
+        }
+
+        if(event.command.get_command_name() == "rob"){
+            dpp::user robber = event.command.get_issuing_user();
+            std::variant<monostate, string, long int, bool, dpp::snowflake, double> recieve = event.get_parameter("user");
+            dpp::user victim;
+            try{ // this try and catch block is to find the user to send money to
+                // try to get a user obj
+                dpp::snowflake temp = std::get<dpp::snowflake>(recieve);
+                victim = event.command.get_resolved_user(temp);
+            }catch(const std::bad_variant_access& ex){
+                // if fail, just look at our own
+                // send fail message
+                event.reply("Could not find that user to rob.");
+                return;
+            }
+
+            int steal_type;
+            std::variant<monostate, string, long int, bool, dpp::snowflake, double> stealVar = event.get_parameter("item");
+            try{
+                steal_type = std::get<long int>(stealVar);
+            }catch(const std::bad_variant_access& ex){
+                steal_type = 0;
+            }
+
+            valType* robberArray;
+            try{
+                robberArray = userDict.getArray(robber.username);
+            }catch(logic_error& e){
+                createEntry(userDict, robber.username);
+                robberArray = userDict.getArray(robber.username);
+            }
+
+            valType* victimArray;
+            try{
+                victimArray = userDict.getArray(victim.username);
+            }catch(logic_error& e){
+                createEntry(userDict, victim.username);
+                victimArray = userDict.getArray(victim.username);
+            }
+
+            if(rob_odds(robberArray[3], victimArray[3]) == true){ //robbery success
+                std::random_device rd;
+                std::mt19937 gen(rd());
+                std::uniform_int_distribution<int> distribution(10, 20);
+                int percent_taken = distribution(gen);
+                double percent_to_take = percent_taken/100.00; // returns some decimal from .10 to .20
+                double amount_stole = victimArray[steal_type] * percent_to_take;
+                victimArray[steal_type] -= amount_stole;
+                robberArray[steal_type] += amount_stole;
+                std::string item;
+                if(steal_type == 0){
+                    item = " dollars";
+                }else{
+                    item = " liters of moonshine";
+                }
+                std::string response = "You've robbed " + victim.get_mention() + " and stole " + doub_to_str(amount_stole) + item;
+                // implement later, random chance to lose associates even when success
+                event.reply(response);
+            }else{
+                // false, robbery failed
+                event.reply("Failed robbery");
+            }
         }
 
         if(event.command.get_command_name() == "buy"){
@@ -357,7 +423,7 @@ int main() {
                     }
 
                     // cout << "testing if event.reply is like a return\n";
-                    std::string response = who.get_mention() + " you bought " + am + " " + param + " for $" + std::to_string(total_cost); 
+                    std::string response = who.get_mention() + " you bought " + am + " " + param + " for $" + doub_to_str(total_cost); 
                     event.reply(response);
                 }
                 
@@ -444,6 +510,17 @@ int main() {
                 set_min_value(0.01)
             );
 
+            dpp::slashcommand rob("rob", "rob another player", bot.me.id);
+            rob.add_option(
+                dpp::command_option(dpp::co_user, "user", "attempt to rob this user", true)
+            );
+            rob.add_option( // defaults to cash robbery
+                dpp::command_option(dpp::co_integer, "item", "what you want to steal", false).
+                add_choice(dpp::command_option_choice("Cash", int(0))).
+                add_choice(dpp::command_option_choice("Moonshine", int(5)))
+            );
+
+
             dpp::slashcommand edit("edit", "edit user's inventory, admin use only", bot.me.id);
             edit.add_option(
                 dpp::command_option(dpp::co_user, "user", "user to edit", true)
@@ -451,11 +528,21 @@ int main() {
             edit.add_option(
                 dpp::command_option(dpp::co_integer, "item", "item to edit", true).
                 add_choice(dpp::command_option_choice("Cash", int(0))).
-                add_choice(dpp::command_option_choice("Bank", int(1)))
+                add_choice(dpp::command_option_choice("Bank", int(1))).
+                add_choice(dpp::command_option_choice("Guns", int(2))).
+                add_choice(dpp::command_option_choice("Associates", int(3))).
+                add_choice(dpp::command_option_choice("Stills", int(4))).
+                add_choice(dpp::command_option_choice("Moonshine(L)", int(5))).
+                add_choice(dpp::command_option_choice("Speaks' (BASE)", int(6))).
+                add_choice(dpp::command_option_choice("Speaks' (TIER1)", int(7))).
+                add_choice(dpp::command_option_choice("Speaks' (TIER2)", int(8))).
+                add_choice(dpp::command_option_choice("Speaks' (TIER3)", int(9)))
             );
             edit.add_option(
                 dpp::command_option(dpp::co_number, "amount", "amount to set to", true)
             );
+
+            dpp::slashcommand sell("sell", "offload your moonshine", bot.me.id);
 
             std::vector<dpp::slashcommand> new_comms;
             new_comms.push_back(work);
@@ -464,6 +551,7 @@ int main() {
             new_comms.push_back(inventory);
             new_comms.push_back(pay);
             new_comms.push_back(edit);
+            new_comms.push_back(rob);
 
             // bot.global_bulk_command_create(new_comms);
         }
