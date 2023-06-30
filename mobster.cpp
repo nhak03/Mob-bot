@@ -87,3 +87,21 @@ bool rob_odds(double robber, double victim){
         return false;
     }
 }
+
+int assoc_loss(double assocs){
+    // helper function that determines how many assocs the robber will
+    // lose on a robbery fail
+    // usage: userArray[3] -= assoc_loss(userArray[3]);
+    if(assocs <= 10){
+        return assocs;
+    }
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<int> distribution(20, 50);
+    int percent_loss = distribution(gen);
+
+    double percent_to_take = percent_loss/100.00;
+    // we want to only subtract integer amounts (can't have fractions of assocs)
+    int dead_assocs = percent_to_take * assocs;
+    return dead_assocs;
+}

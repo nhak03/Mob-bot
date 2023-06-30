@@ -349,7 +349,10 @@ int main() {
                 event.reply(response);
             }else{
                 // false, robbery failed
-                event.reply("Failed robbery");
+                int assocs_lost = assoc_loss(robberArray[3]);
+                robberArray[3] -= assocs_lost;
+                std::string response = "You lost " + std::to_string(assocs_lost) + " associates in a botched robbery on " + victim.get_mention();
+                event.reply(response);
             }
         }
 
