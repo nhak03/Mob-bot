@@ -105,3 +105,38 @@ int assoc_loss(double assocs){
     int dead_assocs = percent_to_take * assocs;
     return dead_assocs;
 }
+
+double bot_roulette_spin(std::string color, double bet){
+    // returns a positive or negative number depending on whether player won or lost bet
+    // on a roulette spin
+    // usage: balance += roulette_spin(color, bet);
+    // works in both cases where win and lose since roulette_spin() returns pos or neg, depending on win/loss
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<int> distribution(1, 38);
+    int outcome = distribution(gen);
+    std::string fin_color;
+    if(outcome >= 1 && outcome <= 18){
+        fin_color = "black";
+    }
+    if(outcome >= 19 && outcome <= 36){
+        fin_color = "red";
+    }
+    if(outcome > 36){
+        fin_color = "green";
+    }
+    // this is roulette for bot, red and black are more unfair, slightly higher chance
+    // to hit green though, for regular roulette, do 18-18-1
+    double winnings = bet;
+    if(fin_color == color){
+        if(fin_color == "green"){ // if hits green, bonus added
+            winnings *= 35;
+            return winnings;
+        }
+        return winnings; // otherwise return pos num
+    }else{
+        // player lost
+        winnings *= -1; // make it negative
+        return winnings;
+    }
+}

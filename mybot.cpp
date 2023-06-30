@@ -287,7 +287,56 @@ int main() {
                 senderArr[0] = 0;
                 senderArr[1] -= amount;
             }
+        }
 
+        if(event.command.get_command_name() == "roulette"){
+            dpp::user player = event.command.get_issuing_user();
+            double bet_amount = std::get<double>(event.get_parameter("bet"));
+            std::string outcome = std::get<std::string>(event.get_parameter("color"));
+            valType* playerArr = userDict.getArray(player.username);
+            std::string response;
+            if((playerArr[0] + playerArr[1]) < bet_amount){
+                response = "You don't have enough money to place that bet.";
+                event.reply(response);
+                return;
+            }
+            // implement optional handler for user_casino, by default it's bot
+            std::string house = "bot";
+            std::variant<monostate, string, long int, bool, dpp::snowflake, double> recieve = event.get_parameter("user");
+            dpp::user usr_house;
+            try{ // this try and catch block is to find the user to send money to
+                // try to get a user obj
+                dpp::snowflake temp = std::get<dpp::snowflake>(recieve);
+                usr_house = event.command.get_resolved_user(temp);
+                house = usr_house.username;
+            }catch(const std::bad_variant_access& ex){
+                // if fail, just gamble with bot as house
+                // do nothing, house already set to bot by default
+            }
+            double bet_outcome = bot_roulette_spin(outcome, bet_amount);
+            if(house == "bot"){
+                if(bet_outcome < 0){ // if neg, player lost
+                    // case where bet_outcome is negative
+                    if(playerArr[0] - bet_outcome >= 0){
+                        // if can subtract fully from pocket, do so
+                        playerArr[0] += bet_outcome;
+                    }
+                    else{
+                        // otherwise, do fully from pocket and rest from bank
+                        // bet_outcome is neg value
+                        bet_outcome += playerArr[0];
+                        playerArr[0] = 0;
+                        playerArr[1] += bet_outcome;
+                    }
+                    response = "You lost $`" + doub_to_str(bet_amount) + "` in that roulette spin.";
+                    event.reply(response);
+                }else{
+                    // bet_outcome > 0, player won the bet
+                    playerArr[0] += bet_outcome;
+                    std::string response = "You won $`" + doub_to_str(bet_outcome) + "` in that roulette spin!";
+                    event.reply(response);
+                }
+            }
         }
 
         if(event.command.get_command_name() == "rob"){
@@ -547,6 +596,21 @@ int main() {
 
             dpp::slashcommand sell("sell", "offload your moonshine", bot.me.id);
 
+            dpp::slashcommand roulette("roulette", "play a game of roulette", bot.me.id);
+            roulette.add_option(
+                dpp::command_option(dpp::co_string, "color", "color to bet on", true).
+                add_choice(dpp::command_option_choice("Green", std::string("green"))).
+                add_choice(dpp::command_option_choice("Red", std::string("red"))).
+                add_choice(dpp::command_option_choice("Black", std::string("black")))
+            );
+            roulette.add_option(
+                dpp::command_option(dpp::co_number, "bet", "how much you are betting", true).
+                set_min_value(0.01)
+            );
+            roulette.add_option(
+                dpp::command_option(dpp::co_user, "user", "roulette at this user's casino", false)
+            );
+
             std::vector<dpp::slashcommand> new_comms;
             new_comms.push_back(work);
             new_comms.push_back(buy);
@@ -555,8 +619,9 @@ int main() {
             new_comms.push_back(pay);
             new_comms.push_back(edit);
             new_comms.push_back(rob);
+            new_comms.push_back(roulette);
 
-            // bot.global_bulk_command_create(new_comms);
+            bot.global_bulk_command_create(new_comms);
         }
     });
     
