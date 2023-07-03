@@ -333,9 +333,13 @@ int main() {
                 }else{
                     // bet_outcome > 0, player won the bet
                     playerArr[0] += bet_outcome;
-                    std::string response = "You won $`" + doub_to_str(bet_outcome) + "` in that roulette spin!";
+                    std::string response = roulette_win_msg(outcome);
+                    response += "\nYou won $`" + doub_to_str(bet_outcome) + "` in that roulette spin!";
                     event.reply(response);
                 }
+            }else{
+                // handler to deal with non-bot house
+                
             }
         }
 
