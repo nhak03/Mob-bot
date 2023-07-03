@@ -177,3 +177,52 @@ std::string roulette_win_msg(std::string color){
     win_msg += "...............^................";
     return win_msg;
 }
+
+std::string roulette_loss_msg(std::string color){
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::string lose_msg = "...............||...............\n";
+    if(color == "red"){
+        std::string black1 = "⬛ 🟥 ⬛ 🟥 ⬛\n";
+        std::string black2 = "⬛ 🟥 ⬛ 🟥 🟩\n";
+        std::string black3 = "🟩 🟥 ⬛ 🟥 ⬛\n";
+        std::string n_red1 = "🟥 🟩 ⬛ 🟥 ⬛\n";
+        std::string n_red2 = "🟥 ⬛ 🟩 🟥 ⬛\n";
+        std::vector<std::string> stringSet = {black1, black2, black3, n_red1, n_red2};
+        std::uniform_int_distribution<int> distribution(0, stringSet.size() - 1);
+        int randomIndex = distribution(gen);
+        // Retrieve the randomly selected string
+        std::string randomString = stringSet[randomIndex];
+        lose_msg += randomString;
+    }
+    if(color == "black"){
+        std::string red1 = "🟥 ⬛ 🟥 ⬛ 🟥\n";
+        std::string red2 = "🟥 ⬛ 🟥 ⬛ 🟩\n";
+        std::string red3 = "🟩 ⬛ 🟥 ⬛ 🟥\n";
+        std::string n_b1 = "🟥 ⬛ 🟩 🟥 ⬛\n";
+        std::string n_b2 = "🟥 ⬛ 🟥 🟩 ⬛\n";
+        std::vector<std::string> stringSet = {red1, red2, red3, n_b1, n_b2};
+        std::uniform_int_distribution<int> distribution(0, stringSet.size() - 1);
+        int randomIndex = distribution(gen);
+        // Retrieve the randomly selected string
+        std::string randomString = stringSet[randomIndex];
+        lose_msg += randomString;
+    }
+    if(color == "green"){
+        std::string n_b2 = "🟥 ⬛ 🟥 🟩 ⬛\n";
+        std::string n_red1 = "🟥 🟩 ⬛ 🟥 ⬛\n";
+        std::string black3 = "🟩 🟥 ⬛ 🟥 ⬛\n";
+        std::string red2 = "🟥 ⬛ 🟥 ⬛ 🟩\n";
+        std::string black1 = "⬛ 🟥 ⬛ 🟥 ⬛\n";
+        std::string red1 = "🟥 ⬛ 🟥 ⬛ 🟥\n";
+        std::vector<std::string> stringSet = {red1, red2, black3, n_red1, n_b2, black1};
+        std::uniform_int_distribution<int> distribution(0, stringSet.size() - 1);
+        int randomIndex = distribution(gen);
+        // Retrieve the randomly selected string
+        std::string randomString = stringSet[randomIndex];
+        lose_msg += randomString;
+    }
+
+    lose_msg += "...............^................";
+    return lose_msg;
+}

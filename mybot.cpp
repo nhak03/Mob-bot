@@ -328,12 +328,13 @@ int main() {
                         playerArr[0] = 0;
                         playerArr[1] += bet_outcome;
                     }
-                    response = "You lost $`" + doub_to_str(bet_amount) + "` in that roulette spin.";
+                    response = roulette_loss_msg(outcome);
+                    response += "\nYou lost $`" + doub_to_str(bet_amount) + "` in that roulette spin.";
                     event.reply(response);
                 }else{
                     // bet_outcome > 0, player won the bet
                     playerArr[0] += bet_outcome;
-                    std::string response = roulette_win_msg(outcome);
+                    response = roulette_win_msg(outcome);
                     response += "\nYou won $`" + doub_to_str(bet_outcome) + "` in that roulette spin!";
                     event.reply(response);
                 }
