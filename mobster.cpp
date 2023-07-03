@@ -15,6 +15,11 @@ const double assoc_price = 30.00;
 const double still_price = 250.00;
 const double still_prod = 4;
 const double speak_price = 2000.00;
+const double casino_base_max = 50000; const double casino_base_def = 100000;
+const double casino_t1_max = 100000; const double casino_t1_def = 150000;
+const double casino_t2_max = 200000; const double casino_t2_def = 300000;
+const double casino_t3_max = 1000000; const double casino_t3_def = 1000000;
+
 
 void hello(){
     std::cout << "Hello World\n";
