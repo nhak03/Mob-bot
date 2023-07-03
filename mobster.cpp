@@ -140,3 +140,40 @@ double bot_roulette_spin(std::string color, double bet){
         return winnings;
     }
 }
+
+std::string roulette_win_msg(std::string color){
+    std::random_device rd;
+    std::mt19937 gen(rd());
+
+    std::string win_msg = "...............||...............\n";
+    // ...............||...............
+    // 🟥 ⬛ 🟥 ⬛ 🟥
+    // ...............^................
+    if(color == "red"){
+        std::string red1 = "🟥 ⬛ 🟥 ⬛ 🟥\n";
+        std::string red2 = "🟥 ⬛ 🟥 ⬛ 🟩\n";
+        std::string red3 = "🟩 ⬛ 🟥 ⬛ 🟥\n";
+        std::vector<std::string> stringSet = {red1, red2, red3};
+        std::uniform_int_distribution<int> distribution(0, stringSet.size() - 1);
+        int randomIndex = distribution(gen);
+        // Retrieve the randomly selected string
+        std::string randomString = stringSet[randomIndex];
+        win_msg += randomString;
+    }
+    if(color == "black"){
+        std::string black1 = "⬛ 🟥 ⬛ 🟥 ⬛\n";
+        std::string black2 = "⬛ 🟥 ⬛ 🟥 🟩\n";
+        std::string black3 = "🟩 🟥 ⬛ 🟥 ⬛\n";
+        std::vector<std::string> stringSet = {black1, black2, black3};
+        std::uniform_int_distribution<int> distribution(0, stringSet.size() - 1);
+        int randomIndex = distribution(gen);
+        // Retrieve the randomly selected string
+        std::string randomString = stringSet[randomIndex];
+        win_msg += randomString;
+    }
+    if(color == "green"){
+        win_msg += "🟥 ⬛ 🟩 🟥 ⬛\n";
+    }
+    win_msg += "...............^................";
+    return win_msg;
+}
