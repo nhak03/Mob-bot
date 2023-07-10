@@ -13,12 +13,15 @@ const double val_hold = -3.1415;
 const double gun_price = 30.00;
 const double assoc_price = 30.00;
 const double still_price = 250.00;
+const double shine_price = 5.00;
 const double still_prod = 4;
 const double speak_price = 2000.00;
 const double casino_base_max = 50000; const double casino_base_def = 100000;
 const double casino_t1_max = 100000; const double casino_t1_def = 150000;
 const double casino_t2_max = 200000; const double casino_t2_def = 300000;
 const double casino_t3_max = 1000000; const double casino_t3_def = 1000000;
+const double casino_price = 15000.00;
+const double player_house_bonus = 1.1; // 10% winnings bonus 
 
 
 void hello(){
@@ -40,8 +43,14 @@ double calc_cost(std::string item, int64_t amount){
     if(item == "item_still"){
         total_cost = still_price * amount;
     }
+    if(item == "item_moonshine"){
+        total_cost = shine_price * amount;
+    }
     if(item == "item_speaks"){
         total_cost = speak_price * amount;
+    }
+    if(item == "item_casino"){
+        total_cost = casino_price * amount;
     }
     return total_cost;
 }
@@ -52,6 +61,9 @@ double assoc_check(std::string item, int64_t amount){
         total_cost = 2 * amount;
     }
     if(item == "item_speaks"){
+        total_cost = 25 * amount;
+    }
+    if(item == "item_casino"){
         total_cost = 25 * amount;
     }
 
@@ -230,4 +242,39 @@ std::string roulette_loss_msg(std::string color){
 
     lose_msg += "...............^................";
     return lose_msg;
+}
+
+std::string roulette_player_house(valType* playerArr, valType* houseArr, std::string house_name){ 
+    // this function is to handle operating roulette with another
+    // player as the house
+    // returns a string, that will be the message sent in event.reply()
+    std::string response = "Player houses not implemented yet.";
+    // first, check to see if that player has a house
+    if(houseArr[11] < 1 && houseArr[12] < 1 && houseArr[13] < 1 && houseArr[14] < 1){
+        // if each is less than 1, then no houses
+        response = house_name + " does not have any casinos for you to gamble at.";
+        return response;
+    }else{
+        // the player as house is valid
+        // calculate gambling operations
+    }
+
+    return response;
+}
+const double max_mult = 1000000.00;
+const int max_int = static_cast<int>(max_mult) - 1;
+
+double crash(){ // returns a value that is the multiplier
+    // using formula
+    // mult = [(E*100-H)/(E-H)]/100
+    
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<int> distribution(0, max_int);
+    int some_H = distribution(gen);
+
+    double mult = (max_mult*100 - some_H) / (max_mult-some_H);
+    mult = mult / 100;
+
+    return round(mult * 100) / 100;
 }

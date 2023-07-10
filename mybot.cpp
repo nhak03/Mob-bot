@@ -4,9 +4,9 @@
 #include<iostream>
 #include<random>
 #include<functional>
-#include "mobster.cpp"
 #include "Dictionary.h"
 #include "Dictionary.cpp" // include RBT structs to use
+#include "mobster.cpp"
 
 #include <thread>
 using namespace std;
@@ -44,9 +44,13 @@ void createEntry(Dictionary& dict, std::string username){
     // and initialize all inventory elems to 0
     dict.setValue(username, val_hold);
     valType* inventory = dict.getArray(username);
+    // inventory at getArray call is an array of x size,
+    // with each index uninitialized
     for(int i=0; i<15; i++){
         inventory[i] = 0;
     }
+    // after this for loop, the player array is now able 
+    // to be operated on
 }
 
 std::string doub_to_str(double x){
@@ -181,7 +185,9 @@ int main() {
                 double speak_tot = valarray[6] + valarray[7];
                 speak_tot += valarray[8]; speak_tot+= valarray[9];
                 std::string speaks = std::to_string(static_cast<int>(speak_tot));
-                std::string casinos = "xx";
+                double casino_tot = valarray[11]; casino_tot += valarray[12];
+                casino_tot += valarray[13]; casino_tot += valarray[14];
+                std::string casinos = std::to_string(static_cast<int>(casino_tot));
                 std::string response = who.get_mention() + "'s Inventory: ```";
                 output << std::left << std::setw(12) << "Cash: " << std::setw(15) << pocket << std::setw(15) << "Stills: " << stills << std::endl;
                 output << std::left << std::setw(12) << "Bank: " << std::setw(15) << bank << std::setw(15) << "Moonshine(L): " << moonshine << std::endl;
@@ -218,8 +224,8 @@ int main() {
             }
             if(labor_type == "default"){
                 valarray[0] += min_wage;
-                std::string msg = who.get_mention() + " you earned $" + doub_to_str(min_wage);
-                msg += "\nyou have $" + doub_to_str(valarray[0]) + " in earnings"; 
+                std::string msg = who.get_mention() + " you earned $`" + doub_to_str(min_wage) + "`";
+                msg += "\nyou have $`" + doub_to_str(valarray[0]) + "` in earnings"; 
                 event.reply(msg);
                 return;
             }
@@ -277,7 +283,7 @@ int main() {
             }
 
             recieverArr[0] += amount; // send money to reciever
-            std::string response = "You've sent $" + doub_to_str(amount) + " to " + reciever.get_mention();
+            std::string response = "You've sent $`" + doub_to_str(amount) + "` to " + reciever.get_mention();
             event.reply(response);
 
             if(senderArr[0] - amount >= 0){ // if can subtract from pocket fully, do so
@@ -340,8 +346,16 @@ int main() {
                 }
             }else{
                 // handler to deal with non-bot house
-                
+                valType* houseArr = userDict.getArray(house);
+                std::string response = roulette_player_house(playerArr, houseArr, house);
+                event.reply(response);
             }
+        }
+
+        if(event.command.get_command_name() == "crash roulette"){
+            // get a user bet, user guess
+            // run crash and see what mult is given
+            // calculate winnings/loss
         }
 
         if(event.command.get_command_name() == "rob"){
@@ -478,9 +492,13 @@ int main() {
                         valarray[6] += amount;
                         // [6] for base, [7] for tier 1, [8] for tier 2, [9] for tier 3
                     }
+                    if(param == "item_casino"){
+                        valarray[3] -= assoc_cost;
+                        valarray[11] += amount;
+                    }
 
                     // cout << "testing if event.reply is like a return\n";
-                    std::string response = who.get_mention() + " you bought " + am + " " + param + " for $" + doub_to_str(total_cost); 
+                    std::string response = who.get_mention() + " you bought " + am + " " + param + " for $`" + doub_to_str(total_cost) + "`"; 
                     event.reply(response);
                 }
                 
@@ -537,8 +555,10 @@ int main() {
                 dpp::command_option(dpp::co_string, "item", "type of item", true).
                 add_choice(dpp::command_option_choice("Gun", std::string("item_gun"))).
                 add_choice(dpp::command_option_choice("Associate", std::string("item_assoc"))).
+                add_choice(dpp::command_option_choice("Moonshine(L)", std::string("item_moonshine"))).
                 add_choice(dpp::command_option_choice("Moonshine Still", std::string("item_still"))).
-                add_choice(dpp::command_option_choice("Speakeasy", std::string("item_speaks")))
+                add_choice(dpp::command_option_choice("Speakeasy", std::string("item_speaks"))).
+                add_choice(dpp::command_option_choice("Casino", std::string("item_casino")))
             );
             buy.add_option(
                 dpp::command_option(dpp::co_integer, "amount", "purchase x item(s)", true).
@@ -593,7 +613,12 @@ int main() {
                 add_choice(dpp::command_option_choice("Speaks' (BASE)", int(6))).
                 add_choice(dpp::command_option_choice("Speaks' (TIER1)", int(7))).
                 add_choice(dpp::command_option_choice("Speaks' (TIER2)", int(8))).
-                add_choice(dpp::command_option_choice("Speaks' (TIER3)", int(9)))
+                add_choice(dpp::command_option_choice("Speaks' (TIER3)", int(9))).
+                add_choice(dpp::command_option_choice("Casino Balance", int(10))).
+                add_choice(dpp::command_option_choice("Casino (BASE)", int(11))).
+                add_choice(dpp::command_option_choice("Casino (TIER1)", int(12))).
+                add_choice(dpp::command_option_choice("Casino (TIER2)", int(13))).
+                add_choice(dpp::command_option_choice("Casino (TIER3)", int(14)))
             );
             edit.add_option(
                 dpp::command_option(dpp::co_number, "amount", "amount to set to", true)
@@ -616,6 +641,17 @@ int main() {
                 dpp::command_option(dpp::co_user, "user", "roulette at this user's casino", false)
             );
 
+            dpp::slashcommand crash_roulette("crash roulette", "play a game of crash roulette", bot.me.id);
+            crash_roulette.add_option(
+                dpp::command_option(dpp::co_number, "bet", "how much you are betting", true).
+                set_min_value(0.01)
+            );
+            crash_roulette.add_option(
+                dpp::command_option(dpp::co_number, "multiplier", "guess the multiplier it'll land on", true).
+                set_min_value(1.01)
+            );
+    
+
             std::vector<dpp::slashcommand> new_comms;
             new_comms.push_back(work);
             new_comms.push_back(buy);
@@ -625,8 +661,9 @@ int main() {
             new_comms.push_back(edit);
             new_comms.push_back(rob);
             new_comms.push_back(roulette);
+            new_comms.push_back(crash_roulette);
 
-            bot.global_bulk_command_create(new_comms);
+            // bot.global_bulk_command_create(new_comms);
         }
     });
     
