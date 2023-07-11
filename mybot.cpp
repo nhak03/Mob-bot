@@ -241,6 +241,25 @@ int main() {
                 }
                 return;
             }
+            if(labor_type == "speak_op"){
+                double result = speak_revenue(valarray);
+                if(result == 0){
+                    event.reply("You have no speakeasies to operate.");
+                    return;
+                }
+                if(result == -1){
+                    event.reply("You have no alcohol sell at your speakeasies.");
+                    return;
+                }
+                if(result < -1){
+                    std::string msg = "You don't have enough alcohol to operate your speakeasies.\n";
+                    msg += "You need `" + doub_to_str(result) + "` liters minimum.";
+                    event.reply(msg);
+                    return;
+                }
+                std::string msg = "You've earned $`" + doub_to_str(result) + "` in revenue from your speakeasies!";
+                event.reply(msg);
+            }
 
         }
 
@@ -626,7 +645,9 @@ int main() {
             dpp::slashcommand work("work", "perform 1 hour of labor", bot.me.id);
             work.add_option(
                 dpp::command_option(dpp::co_string, "labor", "kind of labor", false).
-                add_choice(dpp::command_option_choice("Distill", std::string("distill")))
+                add_choice(dpp::command_option_choice("Distill", std::string("distill"))).
+                add_choice(dpp::command_option_choice("Operate Speakeasy", std::string("speak_op"))).
+                add_choice(dpp::command_option_choice("Operate Casino", std::string("casino_op")))
             );
 
             dpp::slashcommand bal("bal", "shows your balance", bot.me.id);
@@ -711,6 +732,8 @@ int main() {
             crash_roulette.add_option(
                 dpp::command_option(dpp::co_user, "user", "crash roulette at this user's casino", false)
             );
+
+
     
 
             std::vector<dpp::slashcommand> new_comms;

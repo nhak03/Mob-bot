@@ -244,6 +244,11 @@ std::string roulette_loss_msg(std::string color){
     return lose_msg;
 }
 
+bool player_house_check(valType* houseArr){ 
+    // given that a player has a casino, return true or false if it's operational
+    // based on deficit values
+}
+
 std::string roulette_player_house(valType* playerArr, valType* houseArr, std::string house_name){ 
     // this function is to handle operating roulette with another
     // player as the house
@@ -261,6 +266,7 @@ std::string roulette_player_house(valType* playerArr, valType* houseArr, std::st
 
     return response;
 }
+
 const double max_mult = 1000000.00;
 const int max_int = static_cast<int>(max_mult) - 1;
 
@@ -277,4 +283,55 @@ double crash(){ // returns a value that is the multiplier
     mult = mult / 100;
 
     return round(mult * 100) / 100;
+}
+
+const double speak_cost = 2.32; // liters
+const double speak_rate = 25.00; 
+// above is avg consumption per hour assuming base of 17 patrons
+// per hour over 6 hours (~100 patrons per day)
+// about ~$25 per liter sold
+const double base_speak_rev = speak_cost * speak_rate;
+// higher level speaks need more alc to run, but sell price
+// is increased
+const double t1_speak_rev = (speak_cost * 4) * (speak_rate + 10);
+const double t2_speak_rev = (speak_cost * 7) * (speak_rate + 20);
+const double t3_speak_rev = (speak_cost * 10) * (speak_rate + 30);
+
+
+
+double speak_revenue(valType* userArr){
+    // outputs a revenue -> edits balance and user_alc directly
+    // returns 0 if no speakeasies owned
+    // returns -1 if no alcohol to sell
+    // returns -2 if not enough alc to operate
+    double revenue = 0;
+    // base is [6], t1 is [7], t2 is [8], t3 is [9]
+    if(userArr[6] < 1 && userArr[7] < 1 && userArr[8] < 1 && userArr [9] < 1){
+        // if they have none, return val of 0
+        // client can handle appropriate error msg
+        return revenue;
+    }
+
+    double user_alc = userArr[5];
+    if(user_alc <= 0){ // if no alc, return -1
+        revenue = -1;
+        return revenue; 
+    }
+
+    // check to see if have enough alc
+    double alc_cost = (userArr[6] * speak_cost) + (4 * userArr[7] * speak_cost);
+    // t1 uses 4x more alc than base, t2 uses 7x more, t3 uses 10x more
+    alc_cost += (7 * userArr[8] * speak_cost) + (10 * userArr[9] * speak_cost);
+
+    if(user_alc < alc_cost){ // if not enough return -2
+        return alc_cost;
+    }
+
+    // otherwise we have enough to operate;
+    revenue = (userArr[6] * base_speak_rev) + (userArr[7] * t1_speak_rev);
+    revenue += (userArr[8] * t2_speak_rev) + (userArr[9] * t3_speak_rev);
+    userArr[5] -= alc_cost;
+    userArr[0] += revenue;
+    // calculate revenue and return it;
+    return revenue;
 }
