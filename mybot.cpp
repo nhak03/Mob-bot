@@ -352,10 +352,68 @@ int main() {
             }
         }
 
-        if(event.command.get_command_name() == "crash roulette"){
+        if(event.command.get_command_name() == "crash_roulette"){
             // get a user bet, user guess
             // run crash and see what mult is given
             // calculate winnings/loss
+            dpp::user player = event.command.get_issuing_user();
+            double bet_amount = std::get<double>(event.get_parameter("bet"));
+            double mult_guess = std::get<double>(event.get_parameter("multiplier"));
+            valType* playerArr = userDict.getArray(player.username);
+
+            if((playerArr[0] + playerArr[1]) < bet_amount){
+                std::string response;
+                response = "You don't have enough money to place that bet.";
+                event.reply(response);
+                return;
+            }
+
+            std::string house = "bot";
+            std::variant<monostate, string, long int, bool, dpp::snowflake, double> recieve = event.get_parameter("user");
+            dpp::user usr_house;
+            try{ // this try and catch block is to find the user to send money to
+                // try to get a user obj
+                dpp::snowflake temp = std::get<dpp::snowflake>(recieve);
+                usr_house = event.command.get_resolved_user(temp);
+                house = usr_house.username;
+            }catch(const std::bad_variant_access& ex){
+                // if fail, just gamble with bot as house
+                // do nothing, house already set to bot by default
+            }
+
+            double mult_real = crash();
+            std::string response;
+            if(house == "bot"){
+                if(mult_guess > mult_real){
+                    // loss
+                    response = "🚀~~~>💥🔥\n";
+                    response += "You lost $`" + doub_to_str(bet_amount) + "` in that crash bet.\n";
+                    if(playerArr[0] - bet_amount >= 0){
+                        // if can subtract from pocket fully, do so
+                        playerArr[0] -= bet_amount;
+                    }else{
+                        // otherwise, subtract from pocket, and then from bank
+                        bet_amount -= playerArr[0];
+                        playerArr[0] = 0;
+                        playerArr[1] -= bet_amount;
+                    }
+                    response += "Your guess: `" + doub_to_str(mult_guess) + "` || ";
+                    response += "Real multiplier: `" + doub_to_str(mult_real) + "`"; 
+                    event.reply(response); 
+                }else{
+                    // win
+                    double winnings = bet_amount * mult_guess;
+                    playerArr[0] += winnings;
+                    response = "🚀~~~>✨🎆\n";
+                    response += "You won $`" + doub_to_str(winnings) + "` in that crash bet!\n";
+                    response += "Your guess: `" + doub_to_str(mult_guess) + "` || ";
+                    response += "Real multiplier: `" + doub_to_str(mult_real) + "`"; 
+                    event.reply(response);
+                }
+            }
+            else{
+                // non-bot house handler
+            }
         }
 
         if(event.command.get_command_name() == "rob"){
@@ -641,14 +699,17 @@ int main() {
                 dpp::command_option(dpp::co_user, "user", "roulette at this user's casino", false)
             );
 
-            dpp::slashcommand crash_roulette("crash roulette", "play a game of crash roulette", bot.me.id);
+            dpp::slashcommand crash_roulette("crash_roulette", "play a game of crash roulette", bot.me.id);
             crash_roulette.add_option(
                 dpp::command_option(dpp::co_number, "bet", "how much you are betting", true).
-                set_min_value(0.01)
+                set_min_value(1.00)
             );
             crash_roulette.add_option(
                 dpp::command_option(dpp::co_number, "multiplier", "guess the multiplier it'll land on", true).
                 set_min_value(1.01)
+            );
+            crash_roulette.add_option(
+                dpp::command_option(dpp::co_user, "user", "crash roulette at this user's casino", false)
             );
     
 
