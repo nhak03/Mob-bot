@@ -23,6 +23,40 @@ const double casino_t3_max = 1000000; const double casino_t3_def = 1000000;
 const double casino_price = 15000.00;
 const double player_house_bonus = 1.1; // 10% winnings bonus 
 
+void createEntry(Dictionary& dict, std::string username){
+    // if a new user is being added, create entry for them
+    // and initialize all inventory elems to 0
+    dict.setValue(username, val_hold);
+    valType* inventory = dict.getArray(username);
+    // inventory at getArray call is an array of x size,
+    // with each index uninitialized
+    for(int i=0; i<15; i++){
+        inventory[i] = 0;
+    }
+    // after this for loop, the player array is now able 
+    // to be operated on
+}
+
+// this function will return a user entry,
+// if doesn't exist, will make one
+// returns the pointer to the array when done
+valType* getEntry(Dictionary& dict, std::string username){
+    valType* valarray;
+    try{
+        valarray = dict.getArray(username);
+    }catch(logic_error& e){
+        createEntry(dict, username);
+        valarray = dict.getArray(username);
+    }
+    return valarray;
+}
+
+std::string doub_to_str(double x){
+    std::ostringstream p;
+    p << std::fixed << std::setprecision(2) << x;
+    std::string pock = p.str();
+    return pock;
+}
 
 void hello(){
     std::cout << "Hello World\n";
@@ -334,4 +368,118 @@ double speak_revenue(valType* userArr){
     userArr[0] += revenue;
     // calculate revenue and return it;
     return revenue;
+}
+
+// returns a string based off if a casino, speakeasy upgrade was successful
+// updates user array directly here
+// base will either be 6 (speak) or 11 (casino)
+std::string upgrade_check(valType* userArr, std::string business, int tier, int base){
+    int t1 = base + 1; // tier 1 could be more seating
+    int t2 = base + 2; // tier 2 increased quality of liquor
+    int t3 = base + 3; // tier 3 - more personel means ability to serve more people, more money security
+    std::string msg;
+
+    // base of 6 - speaks
+    // base of 11 - casino
+    double t1_cost; double t2_cost; double t3_cost;
+    if(base == 6){
+        t1_cost = 3000;
+        t2_cost = 3000;
+        t3_cost = 6000;
+    }
+    if(base == 11){
+        t1_cost = 22500;
+        t2_cost = 22500;
+        t3_cost = 45000;
+    }
+    
+    if(tier == 1){
+        if(userArr[base] < 1){ // check for base business
+            msg = "You need a base " + business + " to get that upgrade";
+            return msg;
+        }
+        if(userArr[3] < 50){ // check for adequate assocs
+            int assoc_count = static_cast<int>(userArr[3]);
+            msg = "You need to have 50 spare asscoiates to handle upgraded operations at your " + business;
+            msg += "\nYou currently have `" + std::to_string(assoc_count) + "` to spare.";
+            return msg;
+        }
+        if(userArr[0] + userArr[1] >= t1_cost){ // check for adequate funds
+            if(userArr[0] - t1_cost >= 0){
+                userArr[0] -= t1_cost;
+            }else{
+                t1_cost -= userArr[0];
+                userArr[0] = 0;
+                userArr[1] -= t1_cost;
+            }
+            userArr[t1] += 1; userArr[base] -= 1;
+            msg = "You have successfully added increased seating to this " + business;
+            return msg; 
+        }else{
+            double funds_needed = t1_cost - (userArr[0] + userArr[1]);
+            msg = "You do not have enough funds to upgrade your " + business;
+            msg += "\nYou need $`" + doub_to_str(funds_needed) + "` more.";
+            return msg;
+        }
+    }
+    if(tier == 2){
+        if(userArr[t1] < 1){ // check for base business
+            msg = "You need a tier 1 " + business + " to get that upgrade";
+            return msg;
+        }
+        if(userArr[3] < 50){ // check for adequate assocs
+            int assoc_count = static_cast<int>(userArr[3]);
+            msg = "You need to have 50 spare asscoiates to handle upgraded operations at your " + business;
+            msg += "\nYou currently have `" + std::to_string(assoc_count) + "` to spare.";
+            return msg;
+        }
+        if(userArr[0] + userArr[1] >= t2_cost){ // check for adequate funds
+            if(userArr[0] - t2_cost >= 0){
+                userArr[0] -= t2_cost;
+            }else{
+                t2_cost -= userArr[0];
+                userArr[0] = 0;
+                userArr[1] -= t2_cost;
+            }
+            userArr[t2] += 1; userArr[t1] -= 1;
+            msg = "You now serve higher quality liquor at this " + business;
+            return msg; 
+        }else{
+            double funds_needed = t2_cost - (userArr[0] + userArr[1]);
+            msg = "You do not have enough funds to upgrade your " + business;
+            msg += "\nYou need $`" + doub_to_str(funds_needed) + "` more.";
+            return msg;
+        }
+    }
+    if(tier == 3){
+        if(userArr[t2] < 1){ // check for base business
+            msg = "You need a tier 2 " + business + " to get that upgrade";
+            return msg;
+        }
+        if(userArr[3] < 50){ // check for adequate assocs
+            int assoc_count = static_cast<int>(userArr[3]);
+            msg = "You need to have 50 spare asscoiates to handle upgraded operations at your " + business;
+            msg += "\nYou currently have `" + std::to_string(assoc_count) + "` to spare.";
+            return msg;
+        }
+        if(userArr[0] + userArr[1] >= t3_cost){ // check for adequate funds
+            if(userArr[0] - t3_cost >= 0){
+                userArr[0] -= t3_cost;
+            }else{
+                t3_cost -= userArr[0];
+                userArr[0] = 0;
+                userArr[1] -= t3_cost;
+            }
+            userArr[t3] += 1; userArr[t2] -=1;
+            msg = "With extra guards stationed here, you can handle more revenue at this " + business;
+            return msg; 
+        }else{
+            double funds_needed = t3_cost - (userArr[0] + userArr[1]);
+            msg = "You do not have enough funds to upgrade your " + business;
+            msg += "\nYou need $`" + doub_to_str(funds_needed) + "` more.";
+            return msg;
+        }
+    }
+
+    return msg;
 }

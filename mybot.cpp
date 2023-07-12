@@ -39,27 +39,6 @@ void writeTask(const Dictionary& dict) {
     }
 }
 
-void createEntry(Dictionary& dict, std::string username){
-    // if a new user is being added, create entry for them
-    // and initialize all inventory elems to 0
-    dict.setValue(username, val_hold);
-    valType* inventory = dict.getArray(username);
-    // inventory at getArray call is an array of x size,
-    // with each index uninitialized
-    for(int i=0; i<15; i++){
-        inventory[i] = 0;
-    }
-    // after this for loop, the player array is now able 
-    // to be operated on
-}
-
-std::string doub_to_str(double x){
-    std::ostringstream p;
-    p << std::fixed << std::setprecision(2) << x;
-    std::string pock = p.str();
-    return pock;
-}
-
 int main() {
 
     hello();
@@ -587,8 +566,24 @@ int main() {
                 response += "Ordered: " + am + " " + param + " || " + "Cost: $" + cost;
                 event.reply(response);
             }
+        }
 
+        if(event.command.get_command_name() == "upgrade"){
+            std::string business = std::get<std::string>(event.get_parameter("business"));
+            int tier = std::get<std::int64_t>(event.get_parameter("tier"));
+            dpp::user who = event.command.get_issuing_user();
+            valType* valarray = getEntry(userDict, who.username);
+            int base; // what index from user inventory
+            if(business == "speaks"){
+                business = "speakeasy";
+                base = 6; // 6, 7, 8, 9
+            }
+            if(business == "casino"){
+                base = 11; // 11, 12, 13, 14
+            }
             
+            std::string response = upgrade_check(valarray, business, tier, base);
+            event.reply(response);
         }
 
         if(event.command.get_command_name() == "edit"){
@@ -733,12 +728,23 @@ int main() {
                 dpp::command_option(dpp::co_user, "user", "crash roulette at this user's casino", false)
             );
 
-
+            dpp::slashcommand upgrade("upgrade", "what business to upgrade", bot.me.id);
+            upgrade.add_option(
+                dpp::command_option(dpp::co_string, "business", "which business to upgrade", true).
+                add_choice(dpp::command_option_choice("Speakeasy", std::string("speaks"))).
+                add_choice(dpp::command_option_choice("Casino", std::string("casino")))
+            );
+            upgrade.add_option(
+                dpp::command_option(dpp::co_integer, "tier", "what tier to upgrade to (1-3)", true).
+                set_min_value(1).
+                set_max_value(3)
+            );
     
 
             std::vector<dpp::slashcommand> new_comms;
             new_comms.push_back(work);
             new_comms.push_back(buy);
+            new_comms.push_back(upgrade);
             new_comms.push_back(bal);
             new_comms.push_back(inventory);
             new_comms.push_back(pay);
