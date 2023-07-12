@@ -239,6 +239,22 @@ int main() {
                 std::string msg = "You've earned $`" + doub_to_str(result) + "` in revenue from your speakeasies!";
                 event.reply(msg);
             }
+            if(labor_type == "casino_op"){
+                double resArray[] = {0, 0, 0}; // revenue, multiplier, alc consumed
+                double* ptrArr = resArray;
+                casino_revenue(valarray, ptrArr);
+                if(resArray[0] == 0){
+                    event.reply("You have no casinos to operate.");
+                    return;
+                }
+                std::string msg;
+                msg = "You've earned $`" + doub_to_str(resArray[0]) + "` in revenue from your casinos!";
+                if(resArray[1] > 1.00){
+                    msg += "\nRevenue multiplier: `" + doub_to_str(resArray[1]) + "` || ";
+                    msg += "Alcohol consumed(L): `" + doub_to_str(resArray[2]) + "`";
+                }
+                event.reply(msg);
+            }
 
         }
 

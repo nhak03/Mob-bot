@@ -331,8 +331,6 @@ const double t1_speak_rev = (speak_cost * 4) * (speak_rate + 10);
 const double t2_speak_rev = (speak_cost * 7) * (speak_rate + 20);
 const double t3_speak_rev = (speak_cost * 10) * (speak_rate + 30);
 
-
-
 double speak_revenue(valType* userArr){
     // outputs a revenue -> edits balance and user_alc directly
     // returns 0 if no speakeasies owned
@@ -480,6 +478,59 @@ std::string upgrade_check(valType* userArr, std::string business, int tier, int 
             return msg;
         }
     }
-
     return msg;
+}
+
+const double base_casi_rev = 232.00;
+const double t1_casi_rev = 1000.00;
+const double t2_casi_rev = 1933.00;
+const double t3_casi_rev = 3866.00;
+
+const double base_casi_alc = 2;
+const double t1_casi_alc = 10;
+const double t2_casi_alc = 50;
+const double t3_casi_alc = 75;
+
+// returns 0 if player has no casinos
+// returns revenue based on player casinos
+// index 0 is revenue
+// 1 is multiplier
+// 2 is alc consumed for multiplier
+// void type since inputted resArray is modified directly
+void casino_revenue(valType* valarray, double* resArray){
+    // return 0 if no casinos
+    if(valarray[11] + valarray[12] + valarray[13] + valarray[14] <= 0){
+        resArray[0] = 0;
+        resArray[1] = 0;
+        resArray[2] = 0;
+        return;
+    }
+    double revenue = (valarray[11] * base_casi_rev) + (valarray[12] * t1_casi_rev);
+    revenue += (valarray[13] * t2_casi_rev) + (valarray[14] * t3_casi_rev);
+    
+    // apply a multiplier if player has enough alcohol for all establishments
+    double multiplier = 1.00;
+    double required_alc = (valarray[11] * base_casi_alc) + (valarray[12] * t1_casi_alc);
+    required_alc += (valarray[13] * t2_casi_alc) + (valarray[14] * t3_casi_alc);
+    if(valarray[5] >= required_alc){
+        // if they have enough alcohol apply a bonus;
+        if(valarray[11] > 0){
+            multiplier = 1.25;
+        }
+        if(valarray[12] > 0){
+            multiplier = 1.50;
+        }
+        if(valarray[13] > 0){
+            multiplier = 2.25;
+        }
+        if(valarray[14] > 0){
+            multiplier = 3.00;
+        }
+        valarray[5] -= required_alc;
+    }
+    revenue = revenue * multiplier;
+    resArray[0] = revenue;
+    resArray[1] = multiplier;
+    resArray[2] = required_alc;
+
 }
