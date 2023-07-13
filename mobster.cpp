@@ -16,10 +16,10 @@ const double still_price = 250.00;
 const double shine_price = 5.00;
 const double still_prod = 4;
 const double speak_price = 2000.00;
-const double casino_base_max = 50000; const double casino_base_def = 100000;
-const double casino_t1_max = 100000; const double casino_t1_def = 150000;
-const double casino_t2_max = 200000; const double casino_t2_def = 300000;
-const double casino_t3_max = 1000000; const double casino_t3_def = 1000000;
+// const double casino_base_max = 50000; const double casino_base_def = 100000;
+// const double casino_t1_max = 100000; const double casino_t1_def = 150000;
+// const double casino_t2_max = 200000; const double casino_t2_def = 300000;
+// const double casino_t3_max = 1000000; const double casino_t3_def = 1000000;
 const double casino_price = 15000.00;
 const double player_house_bonus = 1.1; // 10% winnings bonus 
 
@@ -278,26 +278,96 @@ std::string roulette_loss_msg(std::string color){
     return lose_msg;
 }
 
-bool player_house_check(valType* houseArr){ 
-    // given that a player has a casino, return true or false if it's operational
-    // based on deficit values
+const double casino_base_def = -100000.00; const double casino_base_vault = 50000.00;
+const double casino_t1_def = -150000.00; const double casino_t1_vault = 100000.00;
+const double casino_t2_def = -300000.00; const double casino_t2_vault = 200000.00;
+const double casino_t3_def = -1000000.00; const double casino_t3_vault = 1000000.00;
+// returns 0 if operational
+// returns -1 if user owns no casinos
+// returns 1 if user has too much house debt
+// returns 2 if user's vault is full (still operational)
+int player_house_check(valType* houseArr){ 
+    double houseBal = houseArr[10]; // index 10 is houseBalance
+    // indexes 11, 12, 13, 14 are casinos
+    double maxDef = (casino_base_def * houseArr[11]) + (casino_t1_def * houseArr[12]);
+    maxDef += (casino_t2_def * houseArr[13]) + (casino_t3_def * houseArr[14]);
+    double maxVault = (casino_base_vault * houseArr[11]) + (casino_t1_vault * houseArr[12]);
+    maxVault += (casino_t2_vault * houseArr[13]) + (casino_t3_vault * houseArr[14]);
+
+    if(houseArr[11] + houseArr[12] + houseArr[13] + houseArr[15] < 1){
+        // check casino ownership
+        return (-1);
+    }
+    if(houseBal < maxDef){
+        // too much house debt
+        return 1;
+    }
+    if(houseBal >= maxVault){
+        // casino vault is full
+        return 2;
+    }
+
+    return 0;
 }
 
-std::string roulette_player_house(valType* playerArr, valType* houseArr, std::string house_name){ 
+/*
+takes in playerArray and the houseArray
+takes in player guess and bet;
+updates the house and the player arrays directly
+returns a string (msg) depending on what operations occurred
+outcome is resultant color
+bet_outcome is resultant deduction/addition from function bot_roulette_spin()
+*/
+std::string roulette_player_house(valType* playerArr, valType* houseArr, std::string house_name, std::string outcome, double bet_outcome){ 
     // this function is to handle operating roulette with another
     // player as the house
     // returns a string, that will be the message sent in event.reply()
     std::string response = "Player houses not implemented yet.";
     // first, check to see if that player has a house
-    if(houseArr[11] < 1 && houseArr[12] < 1 && houseArr[13] < 1 && houseArr[14] < 1){
-        // if each is less than 1, then no houses
-        response = house_name + " does not have any casinos for you to gamble at.";
+    int house_check = player_house_check(houseArr);
+    if(house_check == -1){
+        response = house_name + " does not own any casinos.";
         return response;
-    }else{
-        // the player as house is valid
-        // calculate gambling operations
+    }
+    // 2nd, check to see if the casino has enough money to pay bets
+    if(house_check == 1){
+        response = house_name + "'s casino doesn't have enough funds to pay out winnings.";
+        return response;
     }
 
+    // else, it's a 0 or 2 (operational or operational but full vault)
+
+    if(bet_outcome < 0){ // player lost, house won
+        if(playerArr[0] + bet_outcome >= 0){
+            // if can subtract fully from pocket, do so
+            playerArr[0] += bet_outcome;
+        }
+        else{
+            // otherwise, do fully from pocket and rest from bank
+            // bet_outcome is neg value
+            bet_outcome += playerArr[0];
+            playerArr[0] = 0;
+            playerArr[1] += bet_outcome;
+        }
+        bet_outcome = bet_outcome * (-1); // make it positive for the response
+        response = roulette_loss_msg(outcome);
+        response += "\nYou lost $`" + doub_to_str(bet_outcome) + "` in that roulette spin.";
+
+        // give the bet_outcome to the house
+        if(house_check == 2){
+            // if the casino vault is full, add earnings to owner's pocket
+            houseArr[0] += bet_outcome;
+        }else{
+            houseArr[10] += bet_outcome;
+        }
+    }
+    else{ // player won, house lost
+        houseArr[10] -= bet_outcome; // since player won, bet_outcome is positive
+        playerArr[0] += (bet_outcome * player_house_bonus); // take winnings from casino and give to player
+        // apply a bonus multiplier for gambling at player casino
+        response = roulette_win_msg(outcome);
+        response += "\nYou won $`" + doub_to_str(bet_outcome * player_house_bonus) + "` in that roulette spin!";
+    }
     return response;
 }
 

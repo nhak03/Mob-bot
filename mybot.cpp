@@ -361,7 +361,7 @@ int main() {
             }else{
                 // handler to deal with non-bot house
                 valType* houseArr = userDict.getArray(house);
-                std::string response = roulette_player_house(playerArr, houseArr, house);
+                std::string response = roulette_player_house(playerArr, houseArr, house, outcome, bet_outcome);
                 event.reply(response);
             }
         }
