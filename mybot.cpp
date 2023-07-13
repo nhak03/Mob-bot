@@ -344,9 +344,11 @@ int main() {
                     else{
                         // otherwise, do fully from pocket and rest from bank
                         // bet_outcome is neg value
+                        double bet_orig = bet_outcome;
                         bet_outcome += playerArr[0];
                         playerArr[0] = 0;
                         playerArr[1] += bet_outcome;
+                        bet_outcome = bet_orig;
                     }
                     response = roulette_loss_msg(outcome);
                     response += "\nYou lost $`" + doub_to_str(bet_amount) + "` in that roulette spin.";
@@ -407,9 +409,11 @@ int main() {
                         playerArr[0] -= bet_amount;
                     }else{
                         // otherwise, subtract from pocket, and then from bank
+                        double bet_orig = bet_amount;
                         bet_amount -= playerArr[0];
                         playerArr[0] = 0;
                         playerArr[1] -= bet_amount;
+                        bet_amount = bet_orig;
                     }
                     response += "Your guess: `" + doub_to_str(mult_guess) + "` || ";
                     response += "Real multiplier: `" + doub_to_str(mult_real) + "`"; 
@@ -427,6 +431,9 @@ int main() {
             }
             else{
                 // non-bot house handler
+                valType* houseArr = userDict.getArray(house);
+                response = crash_player_house(playerArr, houseArr, house, mult_guess, bet_amount, mult_real);
+                event.reply(response);
             }
         }
 

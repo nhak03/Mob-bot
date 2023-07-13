@@ -345,9 +345,11 @@ std::string roulette_player_house(valType* playerArr, valType* houseArr, std::st
         else{
             // otherwise, do fully from pocket and rest from bank
             // bet_outcome is neg value
+            double bet_holder = bet_outcome;
             bet_outcome += playerArr[0];
             playerArr[0] = 0;
             playerArr[1] += bet_outcome;
+            bet_outcome = bet_holder;
         }
         bet_outcome = bet_outcome * (-1); // make it positive for the response
         response = roulette_loss_msg(outcome);
@@ -387,6 +389,61 @@ double crash(){ // returns a value that is the multiplier
     mult = mult / 100;
 
     return round(mult * 100) / 100;
+}
+
+// input: playerArr, houseArr, house_name, multiplier guess, bet amount, real_multiplier
+// returns a string based on what operations occurred
+// handles player casino interaction, edits player and house arrays internally
+std::string crash_player_house(valType* playerArr, valType* houseArr, std::string house_name, double guess, double bet, double real_mult){
+    std::string response;
+    int house_check = player_house_check(houseArr);
+    if(house_check == -1){
+        response = house_name + " does not own any casinos.";
+        return response;
+    }
+    // 2nd, check to see if the casino has enough money to pay bets
+    if(house_check == 1){
+        response = house_name + "'s casino doesn't have enough funds to pay out winnings.";
+        return response;
+    }
+
+    // else, it's a 0 or 2 (operational or operational but full vault)
+
+    if(guess > real_mult){ // player lost, house won
+        // loss
+        response = "🚀~~~>💥🔥\n";
+        response += "You lost $`" + doub_to_str(bet) + "` in that crash bet.\n";
+        if(playerArr[0] - bet >= 0){
+            // if can subtract from pocket fully, do so
+            playerArr[0] -= bet;
+        }else{
+            // otherwise, subtract from pocket, and then from bank
+            double bet_holder = bet;
+            bet -= playerArr[0];
+            playerArr[0] = 0;
+            playerArr[1] -= bet;
+            bet = bet_holder;
+        }
+        response += "Your guess: `" + doub_to_str(guess) + "` || ";
+        response += "Real multiplier: `" + doub_to_str(real_mult) + "`"; 
+
+        if(house_check == 2){
+            houseArr[0] += bet;
+        }else{
+            houseArr[10] += bet;
+        }
+                    
+    }else{ // player won, house lost
+        // win
+        double winnings = bet * real_mult;
+        playerArr[0] += (winnings * player_house_bonus);
+        houseArr[10] -= winnings;
+        response = "🚀~~~>✨🎆\n";
+        response += "You won $`" + doub_to_str(winnings * player_house_bonus) + "` in that crash bet!\n";
+        response += "Your guess: `" + doub_to_str(guess) + "` || ";
+        response += "Real multiplier: `" + doub_to_str(real_mult) + "`"; 
+    }
+    return response;
 }
 
 const double speak_cost = 2.32; // liters
