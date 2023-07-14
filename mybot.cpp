@@ -609,6 +609,14 @@ int main() {
             event.reply(response);
         }
 
+        if(event.command.get_command_name() == "casino"){
+            dpp::user owner = event.command.get_issuing_user();
+            std::string action = std::get<std::string>(event.get_parameter("action"));
+            valType* ownerArr = getEntry(userDict, owner.username);
+            std::string response = casino_management(ownerArr, action, owner.username);
+            event.reply(response);
+        }
+
         if(event.command.get_command_name() == "edit"){
             // int param = std::get<long int>(event.get_parameter("item"));
             // double amount = std::get<double>(event.get_parameter("amount"));
@@ -762,6 +770,14 @@ int main() {
                 set_min_value(1).
                 set_max_value(3)
             );
+
+            dpp::slashcommand casino("casino", "casino management for owners", bot.me.id);
+            casino.add_option(
+                dpp::command_option(dpp::co_string, "action", "casino management", true).
+                add_choice(dpp::command_option_choice("View", std::string("casino_view"))).
+                add_choice(dpp::command_option_choice("Restock", std::string("casino_restock"))).
+                add_choice(dpp::command_option_choice("Cashout", std::string("casino_cashout")))
+            );
     
 
             std::vector<dpp::slashcommand> new_comms;
@@ -775,6 +791,7 @@ int main() {
             new_comms.push_back(rob);
             new_comms.push_back(roulette);
             new_comms.push_back(crash_roulette);
+            new_comms.push_back(casino);
 
             // bot.global_bulk_command_create(new_comms);
         }
