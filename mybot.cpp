@@ -522,13 +522,13 @@ int main() {
                 valType* valarray = userDict.getArray(who.username);
                 // index 0 is pocket balance, 1 is bank balance
                 if((valarray[0] + valarray[1]) - total_cost < 0){ // if you can't afford
-                    std::string response = who.get_mention() + " you could not afford that purchase\n";
+                    std::string response = "❌" + who.get_mention() + " you could not afford that purchase\n";
                     response += "Ordered: " + am + " " + param + " || Cost: $" + cost;
                     event.reply(response);
                     return;
                 }
                 if((valarray[3] - assoc_cost) < 0){ // if insufficient associates
-                    std::string response = who.get_mention() + " you need more associates to run that\n";
+                    std::string response = "❌" + who.get_mention() + " you need more associates to run that\n";
                     response += "Ordered: " + am + " " + param + " || Need " + to_string(static_cast<int>(assoc_cost)) + " associates";
                     event.reply(response);
                 }else{
@@ -549,7 +549,7 @@ int main() {
                     if(param == "item_assoc"){
                         // check to see if I can buy, need minimum one gun per assoc
                         if(valarray[2] < amount){
-                            std::string response = who.get_mention() + " you have the cash, but you need x guns to hire x associates.\n";
+                            std::string response = "❌" + who.get_mention() + " you have the cash, but you need x guns to hire x associates.\n";
                             response += "You have " + std::to_string(static_cast<int>(valarray[2])) + " guns.";
                             event.reply(response);
                             return;
@@ -557,7 +557,7 @@ int main() {
                         else{ // you do have the guns
                             valarray[2] -= amount;
                             valarray[3] += amount;
-                            std::string response = who.get_mention() + " you've successfully hired " + std::to_string(amount) + " associates.";
+                            std::string response = "🤝" + who.get_mention() + " you've successfully hired " + std::to_string(amount) + " associates.";
                             event.reply(response);
                             return;
                         }
@@ -565,6 +565,9 @@ int main() {
                     if(param == "item_still"){
                         valarray[3] -= assoc_cost; //
                         valarray[4] += amount;
+                    }
+                    if(param == "item_moonshine"){
+                        valarray[5] += amount;
                     }
                     if(param == "item_speaks"){
                         valarray[3] -= assoc_cost;
@@ -577,7 +580,7 @@ int main() {
                     }
 
                     // cout << "testing if event.reply is like a return\n";
-                    std::string response = who.get_mention() + " you bought " + am + " " + param + " for $`" + doub_to_str(total_cost) + "`"; 
+                    std::string response = "✅" + who.get_mention() + " you bought " + am + " " + param + " for $`" + doub_to_str(total_cost) + "`"; 
                     event.reply(response);
                 }
                 
