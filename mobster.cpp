@@ -787,3 +787,5 @@ std::string param_to_item(std::string param){
 
     return param;
 }
+
+const double base_max_deposit = 20.00; // $0.50 per hour for 8 hours for 5 days a week

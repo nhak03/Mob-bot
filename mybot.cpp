@@ -82,7 +82,7 @@ int main() {
                     inventory = userDict.getArray(token);
                     // -3.14 is our junk holder data
                     // first token is a username, do not add
-                    for(int i=0; i<15; i++){
+                    for(int i=0; i<20; i++){
                         // this for loop zeroes out the whole array
                         // that way, even if the lines have less tokens than indexes
                         // each index gets set to 0 properly, that way on file write
@@ -167,11 +167,13 @@ int main() {
                 double casino_tot = valarray[11]; casino_tot += valarray[12];
                 casino_tot += valarray[13]; casino_tot += valarray[14];
                 std::string casinos = std::to_string(static_cast<int>(casino_tot));
+                std::string fronts = std::to_string(static_cast<int>(valarray[15]));
                 std::string response = who.get_mention() + "'s Inventory: ```";
                 output << std::left << std::setw(12) << "Cash: " << std::setw(15) << pocket << std::setw(15) << "Stills: " << stills << std::endl;
                 output << std::left << std::setw(12) << "Bank: " << std::setw(15) << bank << std::setw(15) << "Moonshine(L): " << moonshine << std::endl;
                 output << std::left << std::setw(12) << "Guns: " << std::setw(15) << guns << std::setw(15) << "Speaks': " << speaks << std::endl;
                 output << std::left << std::setw(12) << "Associates: " << std::setw(15) << associates << std::setw(15) << "Casinos: " << casinos << std::endl;
+                output << std::left << std::setw(12) << "Fronts: " << std::setw(15) << fronts << std::setw(15) << endl;
                 response += output.str() + "```";
                 event.reply(response);
             }catch(logic_error& e){
@@ -523,13 +525,13 @@ int main() {
                 // index 0 is pocket balance, 1 is bank balance
                 if((valarray[0] + valarray[1]) - total_cost < 0){ // if you can't afford
                     std::string response = "❌" + who.get_mention() + " you could not afford that purchase\n";
-                    response += "Ordered: " + am + " " + param + " || Cost: $" + cost;
+                    response += "Ordered: " + am + " " + param_to_item(param) + " || Cost: $" + cost;
                     event.reply(response);
                     return;
                 }
                 if((valarray[3] - assoc_cost) < 0){ // if insufficient associates
                     std::string response = "❌" + who.get_mention() + " you need more associates to run that\n";
-                    response += "Ordered: " + am + " " + param + " || Need " + to_string(static_cast<int>(assoc_cost)) + " associates";
+                    response += "Ordered: " + am + " " + param_to_item(param) + " || Need " + to_string(static_cast<int>(assoc_cost)) + " associates";
                     event.reply(response);
                 }else{
                     if((valarray[0]-total_cost) >= 0){
@@ -545,6 +547,11 @@ int main() {
 
                     if(param == "item_gun"){
                         valarray[2] += amount;
+                        if(amount > 1){
+                            param = "guns";
+                        }else{
+                            param = "gun";
+                        }
                     }
                     if(param == "item_assoc"){
                         // check to see if I can buy, need minimum one gun per assoc
@@ -565,18 +572,39 @@ int main() {
                     if(param == "item_still"){
                         valarray[3] -= assoc_cost; //
                         valarray[4] += amount;
+                        if(amount > 1){
+                            param = "moonshine stills";
+                        }else{
+                            param = "moonshine still";
+                        }
                     }
                     if(param == "item_moonshine"){
                         valarray[5] += amount;
+                        if(amount > 1){
+                            param = "liters of moonshine";
+                        }else{
+                            param = "liter of moonshine";
+                        }
                     }
                     if(param == "item_speaks"){
                         valarray[3] -= assoc_cost;
                         valarray[6] += amount;
+                        if(amount > 1){
+                            param = "speakeasies";
+                        }else{
+                            param = "speakeasy";
+                        }
                         // [6] for base, [7] for tier 1, [8] for tier 2, [9] for tier 3
                     }
                     if(param == "item_casino"){
                         valarray[3] -= assoc_cost;
                         valarray[11] += amount;
+                        if(amount > 1){
+                            param = "casinos";
+                        }else{
+                            param = "casino";
+                        }
+                        // [11] for base, [12] for t1, [13] for t2, [14] for t3
                     }
 
                     // cout << "testing if event.reply is like a return\n";
