@@ -5,8 +5,8 @@
 #include<random>
 #include<functional>
 #include "Dictionary.h"
-#include "Dictionary.cpp" // include RBT structs to use
 #include "mobster.cpp"
+#include "deposit.cpp"
 
 #include <thread>
 using namespace std;
@@ -648,6 +648,11 @@ int main() {
             event.reply(response);
         }
 
+        if(event.command.get_command_name() == "deposit"){
+            std::string response = deposit_handler(event, userDict);
+            event.reply(response);
+        }
+
         if(event.command.get_command_name() == "edit"){
             // int param = std::get<long int>(event.get_parameter("item"));
             // double amount = std::get<double>(event.get_parameter("amount"));
@@ -754,7 +759,9 @@ int main() {
                 add_choice(dpp::command_option_choice("Casino (BASE)", int(11))).
                 add_choice(dpp::command_option_choice("Casino (TIER1)", int(12))).
                 add_choice(dpp::command_option_choice("Casino (TIER2)", int(13))).
-                add_choice(dpp::command_option_choice("Casino (TIER3)", int(14)))
+                add_choice(dpp::command_option_choice("Casino (TIER3)", int(14))).
+                add_choice(dpp::command_option_choice("Front", int(15))).
+                add_choice(dpp::command_option_choice("Wisdom", int(16)))
             );
             edit.add_option(
                 dpp::command_option(dpp::co_number, "amount", "amount to set to", true)
@@ -809,12 +816,19 @@ int main() {
                 add_choice(dpp::command_option_choice("Restock", std::string("casino_restock"))).
                 add_choice(dpp::command_option_choice("Cashout", std::string("casino_cashout")))
             );
+
+            dpp::slashcommand deposit("deposit", "deposit your money into bank for safekeeping", bot.me.id);
+            deposit.add_option(
+                dpp::command_option(dpp::co_number, "amount", "amount to deposit", true).
+                set_min_value(0.01)
+            );
     
 
             std::vector<dpp::slashcommand> new_comms;
             new_comms.push_back(work);
             new_comms.push_back(buy);
             new_comms.push_back(upgrade);
+            new_comms.push_back(deposit);
             new_comms.push_back(bal);
             new_comms.push_back(inventory);
             new_comms.push_back(pay);
@@ -833,8 +847,6 @@ int main() {
     auto writeTaskWrapper = [&dict]() {
         writeTask(dict);
     };
-
-    // cout << "The dict: \n" << userDict << endl;
 
     std::thread timerThread(writeTaskWrapper); // run something every x time, concurrently with the bot
     bot.start(dpp::st_wait);
