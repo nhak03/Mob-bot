@@ -7,6 +7,7 @@
 #include "Dictionary.h"
 #include "commons.h"
 #include "action_work.h"
+#include "action_buy.h"
 
 #include <thread>
 using namespace std;
@@ -146,6 +147,19 @@ int main() {
             std::string msg = action_work(userDict, who.username, who.get_mention(), labor_type);
             event.reply(msg);
         }
+
+        if(event.command.get_command_name() == "buy"){
+            std::string param = std::get<std::string>(event.get_parameter("item")); // reading parameter type
+            std::int64_t amount = 1;
+            try{
+                amount = std::get<std::int64_t>(event.get_parameter("amount")); // reading parameter amount
+            }catch(logic_error& e){
+                // do nothing since amount initialized to 1
+            }
+            dpp::user who = event.command.get_issuing_user();
+            std::string msg = action_buy(userDict, who.username, who.get_mention(), param, amount);
+            event.reply(msg);
+        }
         
 
 
@@ -164,7 +178,8 @@ int main() {
                 add_choice(dpp::command_option_choice("Moonshine(L)", std::string("item_moonshine"))).
                 add_choice(dpp::command_option_choice("Moonshine Still", std::string("item_still"))).
                 add_choice(dpp::command_option_choice("Speakeasy", std::string("item_speaks"))).
-                add_choice(dpp::command_option_choice("Casino", std::string("item_casino")))
+                add_choice(dpp::command_option_choice("Casino", std::string("item_casino"))).
+                add_choice(dpp::command_option_choice("Front", std::string("item_front")))
             );
             buy.add_option(
                 dpp::command_option(dpp::co_integer, "amount", "purchase x item(s)", true).

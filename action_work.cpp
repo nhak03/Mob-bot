@@ -1,6 +1,5 @@
 #include <iostream>
-#include "Dictionary.h"
-#include "commons.h"
+#include "action_work.h"
 
 const double speak_cost = 2.32; // liters
 const double speak_rate = 25.00; 

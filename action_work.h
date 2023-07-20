@@ -1,8 +1,8 @@
 #include "Dictionary.h"
 #include "commons.h"
 
-#ifndef CMD_WORK_H
-#define CMD_WORK_H
+#ifndef ACTION_WORK_H
+#define ACTION_WORK_H
 
 // takes input dictionary, username, and labor type
 // returns a response depending on the labor type and the outcome of that
