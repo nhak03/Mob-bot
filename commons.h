@@ -12,6 +12,8 @@ will also contain basic response handlers such as /bal /inventory
 #ifndef COMMONS_H
 #define COMMONS_H
 const double val_hold = -3.1415;
+const double min_wage = 0.50;
+const double still_prod = 4.00;
 
 // creates an entry for a new user
 // param is dict and username
@@ -22,13 +24,15 @@ void createEntry(Dictionary& dict, std::string username);
 valType* getEntry(Dictionary& dict, std::string username);
 
 // takes a double and returns it in string up to 2 decimals
-// std::string doub_to_str(double x);
+std::string doub_to_str(double x);
 
 // takes a dict and username
 // returns a response that contains the user's balance
 // in both pocket and bank
 std::string action_bal(Dictionary& dict, std::string username, std::string mention);
 
+// takes a dict and a username
+// returns a response that contains the user's inventory
 std::string action_inventory(Dictionary& dict, std::string username, std::string mention);
 
 

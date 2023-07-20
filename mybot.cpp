@@ -6,6 +6,7 @@
 #include<functional>
 #include "Dictionary.h"
 #include "commons.h"
+#include "action_work.h"
 
 #include <thread>
 using namespace std;
@@ -116,7 +117,33 @@ int main() {
 
         if(event.command.get_command_name() == "inventory"){
             dpp::user who = event.command.get_issuing_user();
+            if(who.username == "dajujumaster"){
+                // if admin param is selected, try to find the user
+                std::variant<monostate, string, long int, bool, dpp::snowflake, double> viewUser = event.get_parameter("admin");
+                try{
+                    // if succeeded we lookup their inventory
+                    dpp::snowflake temp = std::get<dpp::snowflake>(viewUser);
+                    who = event.command.get_resolved_user(temp);
+                }catch(const std::bad_variant_access& ex){
+                    // if fail, just look at our own
+                    who = event.command.get_issuing_user();
+                }
+            }
             std::string msg = action_inventory(userDict, who.username, who.get_mention());
+            event.reply(msg);
+        }
+
+        if(event.command.get_command_name() == "work"){
+            dpp::user who = event.command.get_issuing_user();
+            std::string labor_type;
+            std::variant<monostate, string, long int, bool, dpp::snowflake, double> laborVariant = event.get_parameter("labor");
+            try{
+                labor_type = std::get<std::string>(laborVariant);
+            }catch(const std::bad_variant_access& ex){
+                labor_type = "default";
+            }
+
+            std::string msg = action_work(userDict, who.username, who.get_mention(), labor_type);
             event.reply(msg);
         }
         
