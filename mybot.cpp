@@ -113,6 +113,12 @@ int main() {
             std::string msg = action_bal(userDict, who.username, who.get_mention());
             event.reply(msg);
         }
+
+        if(event.command.get_command_name() == "inventory"){
+            dpp::user who = event.command.get_issuing_user();
+            std::string msg = action_inventory(userDict, who.username, who.get_mention());
+            event.reply(msg);
+        }
         
 
 

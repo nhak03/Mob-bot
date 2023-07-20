@@ -29,5 +29,7 @@ valType* getEntry(Dictionary& dict, std::string username);
 // in both pocket and bank
 std::string action_bal(Dictionary& dict, std::string username, std::string mention);
 
+std::string action_inventory(Dictionary& dict, std::string username, std::string mention);
+
 
 #endif

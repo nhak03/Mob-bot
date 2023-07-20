@@ -48,3 +48,29 @@ std::string action_bal(Dictionary& dict, std::string username, std::string menti
 
     return response;
 }
+
+std::string action_inventory(Dictionary& dict, std::string username, std::string mention){
+    valType* valarray = getEntry(dict, username);
+    std::ostringstream output;
+    std::string pocket = doub_to_str(valarray[0]);
+    std::string bank = doub_to_str(valarray[1]);
+    std::string guns = std::to_string(static_cast<int>(valarray[2]));
+    std::string associates = std::to_string(static_cast<int>(valarray[3]));
+    std::string stills = std::to_string(static_cast<int>(valarray[4]));
+    std::string moonshine = doub_to_str(valarray[5]);
+    double speak_tot = valarray[6] + valarray[7];
+    speak_tot += valarray[8]; speak_tot+= valarray[9];
+    std::string speaks = std::to_string(static_cast<int>(speak_tot));
+    double casino_tot = valarray[11]; casino_tot += valarray[12];
+    casino_tot += valarray[13]; casino_tot += valarray[14];
+    std::string casinos = std::to_string(static_cast<int>(casino_tot));
+    std::string fronts = std::to_string(static_cast<int>(valarray[15]));
+    std::string response = mention + "'s Inventory: ```";
+    output << std::left << std::setw(12) << "Cash: " << std::setw(15) << pocket << std::setw(15) << "Stills: " << stills << std::endl;
+    output << std::left << std::setw(12) << "Bank: " << std::setw(15) << bank << std::setw(15) << "Moonshine(L): " << moonshine << std::endl;
+    output << std::left << std::setw(12) << "Guns: " << std::setw(15) << guns << std::setw(15) << "Speaks': " << speaks << std::endl;
+    output << std::left << std::setw(12) << "Associates: " << std::setw(15) << associates << std::setw(15) << "Casinos: " << casinos << std::endl;
+    output << std::left << std::setw(12) << "Fronts: " << std::setw(15) << fronts << std::setw(15) << std::endl;
+    response += output.str() + "```";
+    return response;
+}
