@@ -1,4 +1,6 @@
 #include <iostream>
+#include <random>
+#include <cstdlib>
 #include "action_work.h"
 
 const double speak_cost = 2.32; // liters
@@ -156,4 +158,88 @@ std::string action_work(Dictionary& dict, std::string username, std::string ment
         }
     }
     return msg;
+}
+
+bool rob_odds(double robber, double victim){
+    // 1-5 and 5-6
+    std::random_device rd;
+    std::mt19937 gen(rd());
+
+    double x = 0.5;
+    double ratio = robber/victim;
+    if(ratio < 1){ // for when victim has more
+      ratio = victim/robber;
+      x = ratio/2;
+       std::bernoulli_distribution successChance(x);
+
+      if(successChance(gen)){
+          // cout << "Hit the " << x << " chance to fail" << endl;
+          return false;
+      }else{
+          // cout << "Hit the " << (1-x) << " chance to succeed" << endl;
+          return true;
+      }
+    }
+
+    // when robber has more
+    x = ratio/2;
+
+    std::bernoulli_distribution successChance(x);
+
+    if(successChance(gen)){
+        // cout << "Hit the " << x << " chance to succeed" << endl;
+        return true;
+    }else{
+        // cout << "Hit the " << (1-x) << " chance to fail" << endl;
+        return false;
+    }
+}
+
+int assoc_loss(double assocs){
+    // helper function that determines how many assocs the robber will
+    // lose on a robbery fail
+    // usage: userArray[3] -= assoc_loss(userArray[3]);
+    if(assocs <= 10){
+        return assocs;
+    }
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<int> distribution(20, 50);
+    int percent_loss = distribution(gen);
+
+    double percent_to_take = percent_loss/100.00;
+    // we want to only subtract integer amounts (can't have fractions of assocs)
+    int dead_assocs = percent_to_take * assocs;
+    return dead_assocs;
+}
+
+std::string action_rob(Dictionary& dict, std::string robber, std::string victim, std::string victim_mention, int steal_type){
+    valType* robberArray = getEntry(dict, robber);
+    valType* victimArray = getEntry(dict, victim);
+    std::string response;
+
+    if(rob_odds(robberArray[3], victimArray[3]) == true){ //robbery success
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_int_distribution<int> distribution(10, 20);
+        int percent_taken = distribution(gen);
+        double percent_to_take = percent_taken/100.00; // returns some decimal from .10 to .20
+        double amount_stole = victimArray[steal_type] * percent_to_take;
+        victimArray[steal_type] -= amount_stole;
+        robberArray[steal_type] += amount_stole;
+        std::string item;
+        if(steal_type == 0){
+            item = " dollars💸";
+        }else{
+            item = " liters of moonshine🍾";
+        }
+        response = "✅You've robbed " + victim_mention + " and stole `" + doub_to_str(amount_stole) + "`" + item;
+        // implement later, random chance to lose associates even when success
+    }else{
+        // false, robbery failed
+        int assocs_lost = assoc_loss(robberArray[3]);
+        robberArray[3] -= assocs_lost;
+        response = "❌You lost " + std::to_string(assocs_lost) + " associates 💀 in a botched robbery on " + victim_mention;
+    }
+    return response;
 }

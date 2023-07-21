@@ -149,6 +149,29 @@ int main() {
             event.reply(msg);
         }
 
+        if(event.command.get_command_name() == "rob"){
+            dpp::user robber = event.command.get_issuing_user();
+            std::variant<monostate, string, long int, bool, dpp::snowflake, double> recieve = event.get_parameter("user");
+            dpp::user victim;
+            try{
+                // try to get a user obj
+                dpp::snowflake temp = std::get<dpp::snowflake>(recieve);
+                victim = event.command.get_resolved_user(temp);
+            }catch(const std::bad_variant_access& ex){
+                event.reply("Could not find that user to rob.");
+                return;
+            }
+            int steal_type;
+            std::variant<monostate, string, long int, bool, dpp::snowflake, double> stealVar = event.get_parameter("item");
+            try{
+                steal_type = std::get<long int>(stealVar);
+            }catch(const std::bad_variant_access& ex){
+                steal_type = 0;
+            }
+            std::string msg = action_rob(userDict, robber.username, victim.username, victim.get_mention(), steal_type);
+            event.reply(msg);
+        }
+
         if(event.command.get_command_name() == "buy"){
             std::string param = std::get<std::string>(event.get_parameter("item")); // reading parameter type
             std::int64_t amount = 1;
@@ -236,7 +259,6 @@ int main() {
             std::string msg = action_casino(userDict, owner.username, owner.get_mention(), action);
             event.reply(msg);
         }
-        
 
 
     });
