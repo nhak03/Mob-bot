@@ -149,6 +149,7 @@ std::string action_work(Dictionary& dict, std::string username, std::string ment
         }
         msg = "💸🎰🎲👑🃏💸\n";
         msg += "You've earned $`" + doub_to_str(resArray[0]) + "` in revenue from your casinos!";
+        valarray[0] += resArray[0];
         if(resArray[1] > 1.00){
             msg += "\nRevenue multiplier: `" + doub_to_str(resArray[1]) + "` || ";
             msg += "Alcohol consumed(L): `" + doub_to_str(resArray[2]) + "`";

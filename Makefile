@@ -4,29 +4,31 @@ REMOVE = rm -f
 MEMCHECK = valgrind --leak-check=full
 
 # Main target
-bot: mybot.o action_buy.o action_work.o commons.o Dictionary.o 
-	$(LINK) bot mybot.o action_buy.o action_work.o commons.o Dictionary.o -ldpp
+bot: a_main.o action_buy.o action_work.o commons.o Dictionary.o 
+# $(LINK) bot mybot.o action_buy.o action_work.o commons.o Dictionary.o -ldpp
+	$(LINK) bot obj/* -ldpp 
+
 
 # Compilation rule for Dictionary.cpp
-Dictionary.o: Dictionary.cpp Dictionary.h
-	$(COMPILE) Dictionary.cpp
+Dictionary.o: src/Dictionary.cpp src/Dictionary.h
+	$(COMPILE) src/Dictionary.cpp -o obj/Dictionary.o
 
 # Comiliation for commons.cpp
-commons.o: commons.cpp commons.h
-	$(COMPILE) commons.cpp
+commons.o: src/commons.cpp src/commons.h
+	$(COMPILE) src/commons.cpp -o obj/commons.o
 
 # Compilation for action_work.cpp
-action_work.o: action_work.cpp action_work.h 
-	$(COMPILE) action_work.cpp
+action_work.o: src/action_work.cpp src/action_work.h 
+	$(COMPILE) src/action_work.cpp -o obj/action_work.o
 
 # Compilation for action_buy.cpp
-action_buy.o: action_buy.cpp action_buy.h
-	$(COMPILE) action_buy.cpp
+action_buy.o: src/action_buy.cpp src/action_buy.h
+	$(COMPILE) src/action_buy.cpp -o obj/action_buy.o
 
 # Compilation rule for mybot.cpp
-mybot.o: mybot.cpp
-	$(COMPILE) mybot.cpp
+a_main.o: mybot.cpp
+	$(COMPILE) mybot.cpp -o obj/a_main.o
 
 # Cleanup rule
 clean:
-	$(REMOVE) bot mybot.o Dictionary.o commons.o action_work.o action_buy.o
+	$(REMOVE) bot mybot.o obj/*

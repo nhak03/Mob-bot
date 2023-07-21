@@ -4,10 +4,10 @@
 #include<iostream>
 #include<random>
 #include<functional>
-#include "Dictionary.h"
-#include "commons.h"
-#include "action_work.h"
-#include "action_buy.h"
+#include "src/Dictionary.h"
+#include "src/commons.h"
+#include "src/action_work.h"
+#include "src/action_buy.h"
 
 #include <thread>
 using namespace std;
