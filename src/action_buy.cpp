@@ -166,3 +166,123 @@ std::string action_buy(Dictionary& dict, std::string username, std::string menti
     }
     return response;
 }
+
+
+
+std::string action_upgrade(Dictionary& dict, std::string username, std::string business, int tier){
+    int base;
+    std::string msg;
+    valType* userArr = getEntry(dict, username);
+    if(business == "speaks"){
+        business = "speakeasy";
+        base = 6; // 6, 7, 8, 9
+    }
+    if(business == "casino"){
+        base = 11; // 11, 12, 13, 14
+    }
+
+    int t1 = base + 1; // tier 1 could be more seating
+    int t2 = base + 2; // tier 2 increased quality of liquor
+    int t3 = base + 3; // tier 3 - more personel means ability to serve more people, more money security
+
+    double t1_cost; double t2_cost; double t3_cost;
+    if(base == 6){
+        t1_cost = 3000;
+        t2_cost = 3000;
+        t3_cost = 6000;
+    }
+    if(base == 11){
+        t1_cost = 22500;
+        t2_cost = 22500;
+        t3_cost = 45000;
+    }
+
+    if(tier == 1){
+        if(userArr[base] < 1){ // check for base business
+            msg = "❌You need a base " + business + " to get that upgrade";
+            return msg;
+        }
+        if(userArr[3] < 50){ // check for adequate assocs
+            int assoc_count = static_cast<int>(userArr[3]);
+            msg = "❌You need to have 50 spare asscoiates to handle upgraded operations at your " + business;
+            msg += "\nYou currently have `" + std::to_string(assoc_count) + "` to spare.";
+            return msg;
+        }
+        if(userArr[0] + userArr[1] >= t1_cost){ // check for adequate funds
+            if(userArr[0] - t1_cost >= 0){
+                userArr[0] -= t1_cost;
+            }else{
+                t1_cost -= userArr[0];
+                userArr[0] = 0;
+                userArr[1] -= t1_cost;
+            }
+            userArr[t1] += 1; userArr[base] -= 1;
+            msg = "✅You have successfully added increased seating to this " + business;
+            return msg; 
+        }else{
+            double funds_needed = t1_cost - (userArr[0] + userArr[1]);
+            msg = "❌You do not have enough funds to upgrade your " + business;
+            msg += "\nYou need $`" + doub_to_str(funds_needed) + "` more.";
+            return msg;
+        }
+    }
+    if(tier == 2){
+        if(userArr[t1] < 1){ // check for base business
+            msg = "❌You need a tier 1 " + business + " to get that upgrade";
+            return msg;
+        }
+        if(userArr[3] < 50){ // check for adequate assocs
+            int assoc_count = static_cast<int>(userArr[3]);
+            msg = "❌You need to have 50 spare asscoiates to handle upgraded operations at your " + business;
+            msg += "\nYou currently have `" + std::to_string(assoc_count) + "` to spare.";
+            return msg;
+        }
+        if(userArr[0] + userArr[1] >= t2_cost){ // check for adequate funds
+            if(userArr[0] - t2_cost >= 0){
+                userArr[0] -= t2_cost;
+            }else{
+                t2_cost -= userArr[0];
+                userArr[0] = 0;
+                userArr[1] -= t2_cost;
+            }
+            userArr[t2] += 1; userArr[t1] -= 1;
+            msg = "✅You now serve higher quality liquor at this " + business;
+            return msg; 
+        }else{
+            double funds_needed = t2_cost - (userArr[0] + userArr[1]);
+            msg = "❌You do not have enough funds to upgrade your " + business;
+            msg += "\nYou need $`" + doub_to_str(funds_needed) + "` more.";
+            return msg;
+        }
+    }
+    if(tier == 3){
+        if(userArr[t2] < 1){ // check for base business
+            msg = "❌You need a tier 2 " + business + " to get that upgrade";
+            return msg;
+        }
+        if(userArr[3] < 50){ // check for adequate assocs
+            int assoc_count = static_cast<int>(userArr[3]);
+            msg = "❌You need to have 50 spare asscoiates to handle upgraded operations at your " + business;
+            msg += "\nYou currently have `" + std::to_string(assoc_count) + "` to spare.";
+            return msg;
+        }
+        if(userArr[0] + userArr[1] >= t3_cost){ // check for adequate funds
+            if(userArr[0] - t3_cost >= 0){
+                userArr[0] -= t3_cost;
+            }else{
+                t3_cost -= userArr[0];
+                userArr[0] = 0;
+                userArr[1] -= t3_cost;
+            }
+            userArr[t3] += 1; userArr[t2] -=1;
+            msg = "✅With extra guards stationed here, you can handle more revenue at this " + business;
+            return msg; 
+        }else{
+            double funds_needed = t3_cost - (userArr[0] + userArr[1]);
+            msg = "❌You do not have enough funds to upgrade your " + business;
+            msg += "\nYou need $`" + doub_to_str(funds_needed) + "` more.";
+            return msg;
+        }
+    }
+    return msg;
+}

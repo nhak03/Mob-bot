@@ -162,6 +162,14 @@ int main() {
             event.reply(msg);
         }
 
+        if(event.command.get_command_name() == "upgrade"){
+            std::string business = std::get<std::string>(event.get_parameter("business"));
+            int tier = std::get<std::int64_t>(event.get_parameter("tier"));
+            dpp::user who = event.command.get_issuing_user();
+            std::string msg = action_upgrade(userDict, who.username, business, tier);
+            event.reply(msg);
+        }
+
         if(event.command.get_command_name() == "pay"){
             dpp::user sender = event.command.get_issuing_user();
             double amount = std::get<double>(event.get_parameter("amount"));
@@ -219,6 +227,13 @@ int main() {
                 // do nothing, house already set to bot by default
             }
             std::string msg = action_crash(userDict, player.username, bet_amount, guess, house);
+            event.reply(msg);
+        }
+
+        if(event.command.get_command_name() == "casino"){
+            dpp::user owner = event.command.get_issuing_user();
+            std::string action = std::get<std::string>(event.get_parameter("action"));
+            std::string msg = action_casino(userDict, owner.username, owner.get_mention(), action);
             event.reply(msg);
         }
         

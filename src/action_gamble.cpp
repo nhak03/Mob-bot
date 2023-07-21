@@ -325,3 +325,100 @@ std::string action_crash(Dictionary& dict, std::string player, double bet, doubl
     }
     return msg;
 }
+
+std::string action_casino(Dictionary& dict, std::string owner, std::string mention, std::string action){
+    valType* ownerArr = getEntry(dict, owner);
+    std::string msg;
+    if(ownerArr[11] + ownerArr [12] + ownerArr[13] + ownerArr[14] < 1){
+        msg = "❌ You do not own any casinos to manage.";
+        return msg;
+    }
+
+    if(action == "casino_view"){
+        int total_owned = static_cast<int>(ownerArr[11] + ownerArr[12] + ownerArr[13] + ownerArr[14]);
+        msg = "🎰🎲 " + mention + "'s Casino Ledger: 👑🃏\n";
+        msg += "🎰Owned: " + std::to_string(total_owned) + "\n";
+        
+        if(ownerArr[10] < 0){
+            msg += "📉Current Deficit: $`" + doub_to_str(ownerArr[10]) + "`";
+        }
+        else{
+            msg += "💵Current Vault: $`" + doub_to_str(ownerArr[10]) + "`";
+        }
+
+        double maxDef = (casino_base_def * ownerArr[11]) + (casino_t1_def * ownerArr[12]);
+        maxDef += (casino_t2_def * ownerArr[13]) + (casino_t3_def * ownerArr[14]);
+        double maxVault = (casino_base_vault * ownerArr[11]) + (casino_t1_vault * ownerArr[12]);
+        maxVault += (casino_t2_vault * ownerArr[13]) + (casino_t3_vault * ownerArr[14]);
+
+        msg += "\n📉Max Deficit: $`" + doub_to_str(maxDef) + "`";
+        msg += "\n🔒Max Vault: $`" + doub_to_str(maxVault) + "`";
+        return msg;
+    }
+
+    if(action == "casino_restock"){
+        if(ownerArr[10] < 0){
+            // attempt to clear deficit
+            // deficit so [10] is negative
+            if(ownerArr[0] + ownerArr[1] + ownerArr[10] < 0){
+                msg = "You don't have enough funds to clear your casino deficit.";
+                return msg;
+            }
+            // else:
+            if(ownerArr[0] + ownerArr[10] >= 0){ // if can pay from pocket, do so
+                ownerArr[0] += ownerArr[10];
+                ownerArr[10] = 0;
+            }else{
+                ownerArr[10] += ownerArr[0]; // pay as much from pocket
+                ownerArr[0] = 0;
+                ownerArr[1] += ownerArr[10]; // pay rest from bank
+                ownerArr[10] = 0;
+            }
+            msg = "✅Your casino debts have been successfully paid off.";
+        }
+        else{
+            // attempt to fill the vault
+            // [10] is positive here
+            double maxVault = (casino_base_vault * ownerArr[11]) + (casino_t1_vault * ownerArr[12]);
+            maxVault += (casino_t2_vault * ownerArr[13]) + (casino_t3_vault * ownerArr[14]);
+
+            if(ownerArr[10] >= maxVault){
+                msg = "❌Your casino vaults are already full.";
+                return msg;
+            }
+            if(ownerArr[0] + ownerArr[1] < maxVault){
+                double needed = maxVault - (ownerArr[0] + ownerArr[1]);
+                msg = "❌You have insufficient funds to stock your casino vaults.\n";
+                msg += "You need $`" + doub_to_str(needed) + "` to stock your vaults.";
+                return msg;
+            }
+            // else:
+            double maxVault_copy = maxVault;
+            if(ownerArr[0] - maxVault >= 0){ // pay fully from pocket if possible
+                ownerArr[0] -= maxVault;
+                ownerArr[10] += maxVault;
+            }else{
+                maxVault -= ownerArr[0]; // pay what can from pocket
+                ownerArr[0] = 0;
+                ownerArr[1] -= maxVault; // pay rest from bank
+                ownerArr[10] += maxVault_copy; 
+            }
+            msg = "✅👛-->🔒💵🔒\n";
+            msg += "You have stocked your casino vaults with an additional $`" + doub_to_str(maxVault_copy) + "`"; 
+        }
+        return msg;
+    }
+
+    if(action == "casino_cashout"){
+        // check to see if there's cash to take out;
+        if(ownerArr[10] <= 0){
+            msg = "❌You don't have any available cash to pull from your casino vaults.";
+        }else{
+            ownerArr[0] += ownerArr[10];
+            msg = "🔒💵🔒-->👛\n";
+            msg += "You have successfully cashed out $`" + doub_to_str(ownerArr[10]) + "` from your casino vaults.";
+            ownerArr[10] = 0;
+        }
+    }
+    return msg;
+}

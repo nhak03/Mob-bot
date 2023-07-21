@@ -18,4 +18,12 @@ edits the inventories of house and player directly
 */
 std::string action_crash(Dictionary& dict, std::string player, double bet, double guess, std::string house);
 
+/*
+takes as input: dictionary, owner, and the action
+acceptable actions: casino_view casino_cashout, casino_restock
+returns a string indicating the status of the casino, or if any changes were made
+if cashout/restock, will edit the owner inventory directly
+*/
+std::string action_casino(Dictionary& dict, std::string owner, std::string mention, std::string action);
+
 #endif
