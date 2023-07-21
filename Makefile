@@ -4,7 +4,7 @@ REMOVE = rm -f
 MEMCHECK = valgrind --leak-check=full
 
 # Main target
-bot: a_main.o action_buy.o action_work.o commons.o Dictionary.o 
+bot: a_main.o action_buy.o action_work.o action_gamble.o commons.o Dictionary.o 
 # $(LINK) bot mybot.o action_buy.o action_work.o commons.o Dictionary.o -ldpp
 	$(LINK) bot obj/* -ldpp 
 
@@ -20,6 +20,10 @@ commons.o: src/commons.cpp src/commons.h
 # Compilation for action_work.cpp
 action_work.o: src/action_work.cpp src/action_work.h 
 	$(COMPILE) src/action_work.cpp -o obj/action_work.o
+
+# action_gamble.cpp
+action_gamble.o: src/action_gamble.cpp src/action_gamble.h
+	$(COMPILE) src/action_gamble.cpp -o obj/action_gamble.o
 
 # Compilation for action_buy.cpp
 action_buy.o: src/action_buy.cpp src/action_buy.h

@@ -8,6 +8,7 @@
 #include "src/commons.h"
 #include "src/action_work.h"
 #include "src/action_buy.h"
+#include "src/action_gamble.h"
 
 #include <thread>
 using namespace std;
@@ -178,6 +179,26 @@ int main() {
             }
 
             std::string msg = action_pay(userDict, sender.username, reciever.username, amount, reciever.get_mention());
+            event.reply(msg);
+        }
+
+        if(event.command.get_command_name() == "roulette"){
+            dpp::user player = event.command.get_issuing_user();
+            double bet_amount = std::get<double>(event.get_parameter("bet"));
+            std::string outcome = std::get<std::string>(event.get_parameter("color"));
+            std::string house = "bot";
+            std::variant<monostate, string, long int, bool, dpp::snowflake, double> recieve = event.get_parameter("user");
+            dpp::user usr_house;
+            try{ // this try and catch block is to find the user to send money to
+                // try to get a user obj
+                dpp::snowflake temp = std::get<dpp::snowflake>(recieve);
+                usr_house = event.command.get_resolved_user(temp);
+                house = usr_house.username;
+            }catch(const std::bad_variant_access& ex){
+                // if fail, just gamble with bot as house
+                // do nothing, house already set to bot by default
+            }
+            std::string msg = action_roulette(userDict, player.username, bet_amount, outcome, house);
             event.reply(msg);
         }
         
