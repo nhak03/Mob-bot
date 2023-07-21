@@ -74,3 +74,27 @@ std::string action_inventory(Dictionary& dict, std::string username, std::string
     response += output.str() + "```";
     return response;
 }
+
+std::string action_pay(Dictionary& dict, std::string sender, std::string recipient, double amount, std::string recip_mention){
+    std::string msg;
+    valType* senderArr = getEntry(dict, sender);
+    valType* recpArr = getEntry(dict, recipient);
+
+    if(senderArr[0] + senderArr[1] < amount){
+        msg = "You don't have enough cash to send $`" + doub_to_str(amount) + "`";
+        return msg;
+    }
+    // else
+    recpArr[0] += amount;
+    msg = "💸➡️🤝🏛️\n";
+    msg += "You've sent $`" + doub_to_str(amount) + "` to " + recip_mention;
+
+    if(senderArr[0] - amount >= 0){ // if can subtract from pocket fully, do so
+        senderArr[0] -= amount;
+    }else{
+        amount -= senderArr[0];
+        senderArr[0] = 0;
+        senderArr[1] -= amount;
+    }
+    return msg;
+}

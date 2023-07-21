@@ -160,6 +160,26 @@ int main() {
             std::string msg = action_buy(userDict, who.username, who.get_mention(), param, amount);
             event.reply(msg);
         }
+
+        if(event.command.get_command_name() == "pay"){
+            dpp::user sender = event.command.get_issuing_user();
+            double amount = std::get<double>(event.get_parameter("amount"));
+            std::variant<monostate, string, long int, bool, dpp::snowflake, double> recieve = event.get_parameter("user");
+            dpp::user reciever;
+            try{ // this try and catch block is to find the user to send money to
+                // try to get a user obj
+                dpp::snowflake temp = std::get<dpp::snowflake>(recieve);
+                reciever = event.command.get_resolved_user(temp);
+            }catch(const std::bad_variant_access& ex){
+                // if fail, just look at our own
+                // send fail message
+                event.reply("Could not find that user to send money to.");
+                return;
+            }
+
+            std::string msg = action_pay(userDict, sender.username, reciever.username, amount, reciever.get_mention());
+            event.reply(msg);
+        }
         
 
 

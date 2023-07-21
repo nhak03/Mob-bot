@@ -52,6 +52,28 @@ double assoc_check(std::string item, int64_t amount){
     return total_cost;
 }
 
+std::string param_to_item(std::string param){
+    if(param == "item_gun"){
+        param = "Gun";
+    }
+    if(param == "item_assoc"){
+        param = "Associate";
+    }
+    if(param == "item_moonshine"){
+        param = "Moonshine";
+    }
+    if(param == "item_still"){
+        param = "Still";
+    }
+    if(param == "item_speaks"){
+        param = "Speakeasy";
+    }
+    if(param == "item_casino"){
+        param = "Casino";
+    }
+    return param;
+}
+
 std::string action_buy(Dictionary& dict, std::string username, std::string mention, std::string item, int amount){
     valType* valarray = getEntry(dict, username);
     double total_cost = calc_cost(item, amount);
@@ -59,12 +81,12 @@ std::string action_buy(Dictionary& dict, std::string username, std::string menti
     std::string response;
     if((valarray[0] + valarray[1]) - total_cost < 0){ // if you can't afford
         response = "❌" + mention + " you could not afford that purchase\n";
-        response += "Ordered: " + std::to_string(amount) + " " + item + " || Cost: $" + doub_to_str(total_cost);
+        response += "Ordered: " + std::to_string(amount) + " " + param_to_item(item) + " || Cost: $" + doub_to_str(total_cost);
         return response;
     }
     if((valarray[3] - assoc_cost) < 0){ // if insufficient associates
         response = "❌" + mention + " you need more associates to run that\n";
-        response += "Ordered: " + std::to_string(amount) + " " + item + " || Need " + std::to_string(static_cast<int>(assoc_cost)) + " associates";
+        response += "Ordered: " + std::to_string(amount) + " " + param_to_item(item) + " || Need " + std::to_string(static_cast<int>(assoc_cost)) + " associates";
         return response;
     }else{
         if((valarray[0]-total_cost) >= 0){

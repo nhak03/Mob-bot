@@ -35,5 +35,11 @@ std::string action_bal(Dictionary& dict, std::string username, std::string menti
 // returns a response that contains the user's inventory
 std::string action_inventory(Dictionary& dict, std::string username, std::string mention);
 
+// takes a dict, sender, reciever, and reciever mention
+// attempts to send money from sender to reciever
+// edits both inventories directly 
+// returns a response saying if transaction went through or not
+std::string action_pay(Dictionary& dict, std::string sender, std::string recipient, double amount, std::string recip_mention);
+
 
 #endif
