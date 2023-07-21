@@ -190,7 +190,7 @@ std::string action_roulette(Dictionary& dict, std::string player, double bet, st
             houseArr[10] -= bet;
             msg = roulette_win_msg(color);
             msg += "\nYou won $`" + doub_to_str(bet) + "` in that roulette spin!";
-            msg += "\nApplied a `" + doub_to_str(player_house_bonus) + "`x multiplier for gambling at " + house;
+            msg += "\nApplied a `" + doub_to_str(player_house_bonus) + "`x multiplier for gambling at " + house + "'s casino";
         }
         else{
             msg = roulette_loss_msg(color);
@@ -215,6 +215,113 @@ std::string action_roulette(Dictionary& dict, std::string player, double bet, st
             }
         }
     }
+    return msg;
+}
 
+const double max_mult = 1000000.00;
+const int max_int = static_cast<int>(max_mult) - 1;
+
+double crash(){ // returns a value that is the multiplier
+    // using formula
+    // mult = [(E*100-H)/(E-H)]/100
+    
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<int> distribution(0, max_int);
+    int some_H = distribution(gen);
+
+    double mult = (max_mult*100 - some_H) / (max_mult-some_H);
+    mult = mult / 100;
+
+    return round(mult * 100) / 100;
+}
+
+std::string action_crash(Dictionary& dict, std::string player, double bet, double guess, std::string house){
+    valType* playerArr = getEntry(dict, player);
+    std::string msg;
+    if(playerArr[0] + playerArr[1] < bet){
+        msg = "❌You don't have enough money to place a bet of $`" + doub_to_str(bet) + "`";
+        return msg;
+    }
+
+    double real_mult = crash();
+    if(house == "bot"){
+        if(guess > real_mult){
+            // loss
+            msg = "🚀~~~>💥🔥\n";
+            msg += "You lost $`" + doub_to_str(bet) + "` in that crash bet.\n";
+            if(playerArr[0] - bet >= 0){
+                // if can subtract from pocket fully, do so
+                playerArr[0] -= bet;
+            }else{
+                // otherwise, subtract from pocket, and then from bank
+                double bet_orig = bet;
+                bet -= playerArr[0];
+                playerArr[0] = 0;
+                playerArr[1] -= bet;
+                bet = bet_orig;
+            }
+            msg += "Your guess: `" + doub_to_str(guess) + "` || ";
+            msg += "Real multiplier: `" + doub_to_str(real_mult) + "`"; 
+            return msg; 
+        }else{
+            // win
+            double winnings = bet * guess;
+            playerArr[0] += winnings;
+            msg = "🚀~~~>✨🎆\n";
+            msg += "You won $`" + doub_to_str(winnings) + "` in that crash bet!\n";
+            msg += "Your guess: `" + doub_to_str(guess) + "` || ";
+            msg += "Real multiplier: `" + doub_to_str(real_mult) + "`"; 
+            return msg;
+        }
+    }else{
+        // non-bot house
+        valType* houseArr = getEntry(dict, house);
+        int house_check = player_house_check(houseArr);
+        if(house_check == -1){
+            msg = house + " does not own any casinos.";
+            return msg;
+        }
+        // 2nd, check to see if the casino has enough money to pay bets
+        if(house_check == 1){
+            msg = house + "'s casino doesn't have enough funds to pay out winnings.";
+            return msg;
+        }
+        // else, it's a 0 or 2 (operational or operational but full vault)
+
+        if(guess > real_mult){ // player lost, house won
+            // loss
+            msg = "🚀~~~>💥🔥\n";
+            msg += "You lost $`" + doub_to_str(bet) + "` in that crash bet.\n";
+            if(playerArr[0] - bet >= 0){
+                // if can subtract from pocket fully, do so
+                playerArr[0] -= bet;
+            }else{
+                // otherwise, subtract from pocket, and then from bank
+                double bet_holder = bet;
+                bet -= playerArr[0];
+                playerArr[0] = 0;
+                playerArr[1] -= bet;
+                bet = bet_holder;
+            }
+            msg += "Your guess: `" + doub_to_str(guess) + "` || ";
+            msg += "Real multiplier: `" + doub_to_str(real_mult) + "`"; 
+            if(house_check == 2){
+                houseArr[0] += bet;
+            }else{
+                houseArr[10] += bet;
+            }    
+        }else{
+            // win
+            double winnings = bet * real_mult;
+            playerArr[0] += (winnings * player_house_bonus);
+            houseArr[10] -= winnings;
+            msg = "🚀~~~>✨🎆\n";
+            msg += "You won $`" + doub_to_str(winnings * player_house_bonus) + "` in that crash bet!\n";
+            msg += "Your guess: `" + doub_to_str(guess) + "` || ";
+            msg += "Real multiplier: `" + doub_to_str(real_mult) + "`\n"; 
+            msg += "Applied a `" + doub_to_str(player_house_bonus) + "`x multiplier for gambling at " + house + "'s casino";
+        }
+    }
     return msg;
 }
