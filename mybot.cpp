@@ -37,7 +37,7 @@ void writeTask(const Dictionary& dict) {
     while (true) {
         std::this_thread::sleep_for(std::chrono::seconds(15));
         writeDictionaryToFile(dict);
-        cout << "Did a file save" << endl;
+        // cout << "Did a file save" << endl;
     }
 }
 
@@ -258,6 +258,32 @@ int main() {
             std::string action = std::get<std::string>(event.get_parameter("action"));
             std::string msg = action_casino(userDict, owner.username, owner.get_mention(), action);
             event.reply(msg);
+        }
+
+        if(event.command.get_command_name() == "edit"){
+            dpp::user who = event.command.get_issuing_user();
+            if(who.username == "dajujumaster"){
+                int param = std::get<long int>(event.get_parameter("item"));
+                double amount = std::get<double>(event.get_parameter("amount"));
+                std::variant<monostate, string, long int, bool, dpp::snowflake, double> viewUser = event.get_parameter("user");
+                try{
+                    dpp::snowflake temp = std::get<dpp::snowflake>(viewUser);
+                    who = event.command.get_resolved_user(temp);
+                }catch(const std::bad_variant_access& ex){
+                    event.reply("Could not find that user");
+                    return;
+                }
+                valType* valarray = userDict.getArray(who.username);
+                double old_val = valarray[param];
+                valarray[param] = amount;
+                std::string response = "Changed " + who.get_mention() + "[" + to_string(param) + "]" + " from ";
+                response += doub_to_str(old_val) + " to " + doub_to_str(amount);
+                event.reply(response);
+            }
+            else{
+                event.reply("You do not have sufficient permissions to use this.");
+            }
+
         }
 
 

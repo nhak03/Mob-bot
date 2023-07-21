@@ -159,6 +159,16 @@ std::string action_buy(Dictionary& dict, std::string username, std::string menti
             }
             // [11] for base, [12] for t1, [13] for t2, [14] for t3
         }
+        if(item == "item_front"){
+            valarray[3] -= assoc_cost;
+            valarray[15] += amount;
+            if(amount > 1){
+                item = "fronts";
+            }else{
+                item = "front";
+            }
+            // [15] is front
+        }
 
         // cout << "testing if event.reply is like a return\n";
         response = "✅" + mention + " you bought " + std::to_string(amount) + " " + item + " for $`" + doub_to_str(total_cost) + "`"; 

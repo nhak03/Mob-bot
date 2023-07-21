@@ -41,5 +41,4 @@ std::string action_inventory(Dictionary& dict, std::string username, std::string
 // returns a response saying if transaction went through or not
 std::string action_pay(Dictionary& dict, std::string sender, std::string recipient, double amount, std::string recip_mention);
 
-
 #endif
