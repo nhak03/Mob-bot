@@ -374,7 +374,9 @@ int main() {
                 add_choice(dpp::command_option_choice("Casino (TIER2)", int(13))).
                 add_choice(dpp::command_option_choice("Casino (TIER3)", int(14))).
                 add_choice(dpp::command_option_choice("Front", int(15))).
-                add_choice(dpp::command_option_choice("Wisdom", int(16)))
+                add_choice(dpp::command_option_choice("deposit counter", int(16))).
+                add_choice(dpp::command_option_choice("deposit amount", int(17))).
+                add_choice(dpp::command_option_choice("Wisdom", int(18)))
             );
             edit.add_option(
                 dpp::command_option(dpp::co_number, "amount", "amount to set to", true)

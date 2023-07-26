@@ -266,7 +266,7 @@ const double bracket18 = 38462; // 1 million
 // returns a percentage of tax that'll be taken
 double tax_rate(double income){
     double rate = 0.08;
-    
+
     if(income >= bracket2){
         rate = 0.09;
     }
@@ -331,41 +331,76 @@ std::string action_deposit(Dictionary& dict, std::string username, std::string m
     
     // step 1 audit
     // low income b1 and b2 don't need audits
-    if(amount > bracket2){
+    if(amount > bracket2 || userArr[16] >= 26){
         // 50-50 to audit
         std::random_device rd;
         std::mt19937 gen(rd());
         std::uniform_int_distribution<int> distr(1, 10);
         int outcome = distr(gen);
-        if(outcome < 5){ // no audit
-            // do nothing
-        }else{
+        if((outcome <= 3)  || (userArr[16] >= 26)){
             // we audit
-            msg = "Your deposit has been randomly selected for an audit.\n";
-            if((amount >= (0.25) * userArr[0]) || amount >= (2 * bracket2)){
-                // if the amount trying to deposit is more than 25% of your pocket
-                // or >= double bracket2
-                // look to see if have fronts, index 15
-                if(amount <= (front_income * userArr[15])){
+            // audit every 26 deposits or randomly
+            if(userArr[16] >= 26){
+                // regular audit
+                msg = "Your account has been selected for a regular audit.\n";
+                userArr[16] = 0; // reset the counter
+
+                if((userArr[17] + amount) >= (26 * 1.50 * bracket2)){
+                    if(userArr[17] <= (26 * front_income * userArr[15])){
                     // pass if they have appropriate fronts as sources
-                    msg += "✅Your deposit has passed the audit.\n";
-                }else{
-                    // fail (dirty money)
-                    msg += "❌You have failed this audit.\n";
-                    double fine = 0.50 * amount;
-                    msg += "👮The IRS seized your deposit of: $`" + doub_to_str(amount) + "`\n";
-                    msg += "🧾You are forced to pay a fine of $`" + doub_to_str(fine) + "`\n";
-                    userArr[0] -= (amount + fine);
-                    if(userArr[0] < 0){
-                        // pull from bank (since bank should have negatives)
-                        userArr[0] = 0.00;
-                        userArr[1] -= (amount + fine);
+                    msg += "✅Your deposit and bank account have passed the audit.\n";
+                    userArr[17] = 0.00; // reset the amount counter
+                    }else{
+                        // fail
+                        msg += "❌You have failed this audit.\n";
+                        double fine = 0.50 * (userArr[17] + amount);
+                        msg += "👮The IRS seized your deposit of: $`" + doub_to_str(amount) + "`\n";
+                        msg += "They also siezed $`" + doub_to_str(userArr[17]) + "` in illict revenue\n";
+                        msg += "🧾You are forced to pay a fine of $`" + doub_to_str(fine) + "`\n";
+                        userArr[0] -= (amount + fine + userArr[17]);
+                        // subtract the deposit, fine, and illicit money
+                        if(userArr[0] < 0){
+                            // pull from bank (since bank should have negatives)
+                            userArr[0] = 0.00;
+                            userArr[1] -= (amount + fine + userArr[17]);
+                        }
+                        userArr[17] = 0.00; // reset the amount counter
+                        return msg;
                     }
-                    return msg;
+                }else{
+                    // pass
+                    msg += "✅Your account has passed the audit.\n";
+                    userArr[17] = 0.00;
                 }
             }else{
-                // pass 
-                msg += "✅Your deposit has passed the audit.\n";
+                // random chance audit
+                msg = "Your deposit has been randomly selected for an audit.\n";
+                if((amount >= (0.25) * userArr[0]) || amount >= (2 * bracket2)){
+                    // if the amount trying to deposit is more than 25% of your pocket
+                    // or >= double bracket2
+                    // look to see if have fronts, index 15
+                    if(amount <= (front_income * userArr[15])){
+                        // pass if they have appropriate fronts as sources
+                        msg += "✅Your deposit has passed the audit.\n";
+                    }else{
+                        // fail (dirty money)
+                        msg += "❌You have failed this audit.\n";
+                        double fine = 0.50 * amount;
+                        msg += "👮The IRS seized your deposit of: $`" + doub_to_str(amount) + "`\n";
+                        msg += "🧾You are forced to pay a fine of $`" + doub_to_str(fine) + "`\n";
+                        userArr[0] -= (amount + fine);
+                        if(userArr[0] < 0){
+                            // pull from bank (since bank should have negatives)
+                            userArr[0] = 0.00;
+                            userArr[1] -= (amount + fine);
+                        }
+                        return msg;
+                    }
+                }else{
+                    // pass 
+                    msg += "✅Your deposit has passed the audit.\n";
+                    userArr[17] = 0.00;
+                }
             }
         }
     }
@@ -378,6 +413,11 @@ std::string action_deposit(Dictionary& dict, std::string username, std::string m
     msg += "🧾$`" + doub_to_str(taxed) + "` of your deposit has been taken as income tax.\n";
     userArr[1] += amount;
     msg += "🏦$`" + doub_to_str(amount) + "` has been added to your bank account.";
+
+    // userArr[16] is the deposit counter
+    // userArr[17] is the amount tracker
+    userArr[16] += 1;
+    userArr[17] += amount;
 
     return msg;
 }
