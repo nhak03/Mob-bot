@@ -243,3 +243,141 @@ std::string action_rob(Dictionary& dict, std::string robber, std::string victim,
     }
     return response;
 }
+
+const double front_income = 6000; // $3000 per week, for 2 weeks (26 * 6000) --> yearly $156,000
+const double bracket1 = 154; // (26 * ) --> yearly $4,000
+const double bracket2 = 231; // (26 * ) --> yearly $6,000
+const double bracket3 = 385; // (26 * ) --> yearly $10,000
+const double bracket4 = 770; // (26 * ) --> yearly $20,000
+const double bracket5 = 1154; // (26* ) --> yearly $30,000
+const double bracket6 = 1539; // (26* ) --> yearly $40,000
+const double bracket7 = 1923; // (26* ) --> yearly $50,000
+const double bracket8 = 2308; // (26* ) --> yearly $60,000
+const double bracket9 = 2692; // yearly $70k
+const double bracket10 = 3846; // yearly $100k
+const double bracket12 = 5769; // yearly $150k
+const double bracket13 = 7692; // yearly $200k
+const double bracket14 = 11538; // 300k
+const double bracket15 = 15384; // 400k
+const double bracket16 = 19230; // 500k
+const double bracket17 = 28846; // 750k
+const double bracket18 = 38462; // 1 million
+
+// returns a percentage of tax that'll be taken
+double tax_rate(double income){
+    double rate = 0.08;
+    
+    if(income >= bracket2){
+        rate = 0.09;
+    }
+    if(income >= bracket3){
+        rate = 0.10;
+    }
+    if(income >= bracket4){
+        rate = 0.16;
+    }
+    if(income >= bracket5){
+        rate = 0.21;
+    }
+    if(income >= bracket6){
+        rate = 0.26;
+    }
+    if(income >= bracket7){
+        rate = 0.31;
+    }
+    if(income >= bracket8){
+        rate = 0.36;
+    }
+    if(income >= bracket9){
+        rate = 0.41;
+    }
+    if(income >= bracket10){
+        rate = 0.56;
+    }
+    if(income >= bracket12){
+        rate = 0.57;
+    }
+    if(income >= bracket13){
+        rate = 0.58;
+    }
+    if(income >= bracket14){
+        rate = 0.59;
+    }
+    if(income >= bracket15){
+        rate = 0.60;
+    }
+    if(income >= bracket16){
+        rate = 0.61;
+    }
+    if(income >= bracket17){
+        rate = 0.62;
+    }
+    if(income >= bracket18){
+        rate = 0.63;
+    }
+    return rate; 
+}
+
+
+
+std::string action_deposit(Dictionary& dict, std::string username, std::string mention, double amount){
+    std::string msg;
+    valType* userArr = getEntry(dict, username);
+
+    if(amount > userArr[0]){
+        msg = mention + " you don't have enough funds for that deposit.";
+        return msg;
+    }
+    
+    // step 1 audit
+    // low income b1 and b2 don't need audits
+    if(amount > bracket2){
+        // 50-50 to audit
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_int_distribution<int> distr(1, 10);
+        int outcome = distr(gen);
+        if(outcome < 5){ // no audit
+            // do nothing
+        }else{
+            // we audit
+            msg = "Your deposit has been randomly selected for an audit.\n";
+            if((amount >= (0.25) * userArr[0]) || amount >= (2 * bracket2)){
+                // if the amount trying to deposit is more than 25% of your pocket
+                // or >= double bracket2
+                // look to see if have fronts, index 15
+                if(amount <= (front_income * userArr[15])){
+                    // pass if they have appropriate fronts as sources
+                    msg += "✅Your deposit has passed the audit.\n";
+                }else{
+                    // fail (dirty money)
+                    msg += "❌You have failed this audit.\n";
+                    double fine = 0.50 * amount;
+                    msg += "👮The IRS seized your deposit of: $`" + doub_to_str(amount) + "`\n";
+                    msg += "🧾You are forced to pay a fine of $`" + doub_to_str(fine) + "`\n";
+                    userArr[0] -= (amount + fine);
+                    if(userArr[0] < 0){
+                        // pull from bank (since bank should have negatives)
+                        userArr[0] = 0.00;
+                        userArr[1] -= (amount + fine);
+                    }
+                    return msg;
+                }
+            }else{
+                // pass 
+                msg += "✅Your deposit has passed the audit.\n";
+            }
+        }
+    }
+
+    // assuming here, you passed audit, now pay tax on that deposit
+    double rate = tax_rate(amount);
+    double taxed = rate * amount;
+    userArr[0] -= amount;
+    amount -= taxed;
+    msg += "🧾$`" + doub_to_str(taxed) + "` of your deposit has been taken as income tax.\n";
+    userArr[1] += amount;
+    msg += "🏦$`" + doub_to_str(amount) + "` has been added to your bank account.";
+
+    return msg;
+}

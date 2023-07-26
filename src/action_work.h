@@ -15,4 +15,14 @@ std::string action_work(Dictionary& dict, std::string username, std::string ment
 // edits inventories directly
 std::string action_rob(Dictionary& dict, std::string robber, std::string victim, std::string victim_mention, int steal_type);
 
+/*
+after you make money, you deposit it for safety
+inputs: dictionary, username, mention, and amount to deposit
+returns a response depending on whether deposit was successful
+determines how much tax to take
+determines if money is "clean" or "dirty"
+edits inventory directly
+*/
+std::string action_deposit(Dictionary& dict, std::string username, std::string mention, double amount);
+
 #endif

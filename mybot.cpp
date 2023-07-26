@@ -233,6 +233,13 @@ int main() {
             event.reply(msg);
         }
 
+        if(event.command.get_command_name() == "deposit"){
+            dpp::user who = event.command.get_issuing_user();
+            double cash = std::get<double>(event.get_parameter("amount"));
+            std::string msg = action_deposit(userDict, who.username, who.get_mention(), cash);
+            event.reply(msg);
+        }
+
         if(event.command.get_command_name() == "crash_roulette"){
             dpp::user player = event.command.get_issuing_user();
             double bet_amount = std::get<double>(event.get_parameter("bet"));
