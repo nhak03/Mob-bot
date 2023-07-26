@@ -49,7 +49,7 @@ std::string action_bal(Dictionary& dict, std::string username, std::string menti
     return response;
 }
 
-std::string action_inventory(Dictionary& dict, std::string username, std::string mention){
+std::string action_inventory(Dictionary& dict, std::string username, std::string mention, bool admin){
     valType* valarray = getEntry(dict, username);
     std::ostringstream output;
     std::string pocket = doub_to_str(valarray[0]);
@@ -66,11 +66,18 @@ std::string action_inventory(Dictionary& dict, std::string username, std::string
     std::string casinos = std::to_string(static_cast<int>(casino_tot));
     std::string fronts = std::to_string(static_cast<int>(valarray[15]));
     std::string response = mention + "'s Inventory: ```";
-    output << std::left << std::setw(12) << "Cash: " << std::setw(15) << pocket << std::setw(15) << "Stills: " << stills << std::endl;
-    output << std::left << std::setw(12) << "Bank: " << std::setw(15) << bank << std::setw(15) << "Moonshine(L): " << moonshine << std::endl;
+    output << std::left << std::setw(12) << "Cash: " << std::setw(15) << "$" << pocket << std::setw(15) << "Stills: " << stills << std::endl;
+    output << std::left << std::setw(12) << "Bank: " << std::setw(15) << "$" << bank << std::setw(15) << "Moonshine(L): " << moonshine << std::endl;
     output << std::left << std::setw(12) << "Guns: " << std::setw(15) << guns << std::setw(15) << "Speaks': " << speaks << std::endl;
     output << std::left << std::setw(12) << "Associates: " << std::setw(15) << associates << std::setw(15) << "Casinos: " << casinos << std::endl;
     output << std::left << std::setw(12) << "Fronts: " << std::setw(15) << fronts << std::setw(15) << std::endl;
+    if(admin == true){
+        std::string deposits = std::to_string(static_cast<int>(valarray[16]));
+        std::string am_depod = doub_to_str(valarray[17]);
+        std::string casino_bal = doub_to_str(valarray[10]);
+        output << std::left << std::setw(12) << "Deposits: " << std::setw(15) << deposits << std::setw(15) << "Deposited before audit: " << am_depod << std::endl;
+        output << std::left << std::setw(12) << "Casino Balance: " << std::setw(15) << casino_bal << std::endl;
+    }
     response += output.str() + "```";
     return response;
 }
@@ -81,7 +88,7 @@ std::string action_pay(Dictionary& dict, std::string sender, std::string recipie
     valType* recpArr = getEntry(dict, recipient);
 
     if(senderArr[0] + senderArr[1] < amount){
-        msg = "You don't have enough cash to send $`" + doub_to_str(amount) + "`";
+        msg = "❌You don't have enough cash to send $`" + doub_to_str(amount) + "`";
         return msg;
     }
     // else
@@ -98,3 +105,47 @@ std::string action_pay(Dictionary& dict, std::string sender, std::string recipie
     }
     return msg;
 }
+
+void index_checker(){
+
+}
+
+const double retire_savings = 10000000.00;
+const double retire_casino = 10;
+const double retire_speaks = 20;
+const double retire_fronts = 20;
+std::string action_retire(Dictionary& dict, std::string username, std::string mention){
+    valType* userArr = getEntry(dict, username);
+    std::string msg;
+    if(userArr[1] < retire_savings){
+        msg = "Whoa there, " + mention + "! Can't exactly retire yet boss, need more dough for a cushy retirement!";
+        return msg;
+    }
+    if(userArr[14] < retire_casino){
+        msg = mention + ", come on! You gotta leave some great casinos in your name!";
+        return msg;
+    }
+    if(userArr[10] < 0){
+        msg = mention + "! Can't leave our gambling debts unpaid!";
+        return msg; 
+    }
+    if(userArr[9] < retire_speaks){
+        msg = mention + ", you gotta leave some legendary speakeasies before you leave!";
+        return msg;
+    }
+    if(userArr[15] < retire_fronts){
+        msg = mention + ", at least help the crew setup some fronts before you go!";
+        return msg;
+    }
+
+    for(int i=0; i<18; i++){
+        userArr[i] = 0.00; // reset all
+    }
+    userArr[18] += 1;
+    msg = "✨🎉🎂🎆\n";
+    msg += mention + ", the crew says that it's sad you're stepping down, but they wish you a happy retirement!\n";
+    msg += "**Reset: gained 1 wisdom**";
+
+    return msg;
+}
+

@@ -355,7 +355,7 @@ std::string action_deposit(Dictionary& dict, std::string username, std::string m
                         msg += "❌You have failed this audit.\n";
                         double fine = 0.50 * (userArr[17] + amount);
                         msg += "👮The IRS seized your deposit of: $`" + doub_to_str(amount) + "`\n";
-                        msg += "They also siezed $`" + doub_to_str(userArr[17]) + "` in illict revenue\n";
+                        msg += "🔒They also siezed $`" + doub_to_str(userArr[17]) + "` in illict revenue\n";
                         msg += "🧾You are forced to pay a fine of $`" + doub_to_str(fine) + "`\n";
                         userArr[0] -= (amount + fine + userArr[17]);
                         // subtract the deposit, fine, and illicit money
@@ -405,7 +405,7 @@ std::string action_deposit(Dictionary& dict, std::string username, std::string m
         }
     }
 
-    // assuming here, you passed audit, now pay tax on that deposit
+    // assuming here, you passed audit or didn't get one, now pay tax on that deposit
     double rate = tax_rate(amount);
     double taxed = rate * amount;
     userArr[0] -= amount;

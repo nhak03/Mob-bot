@@ -110,6 +110,10 @@ std::string action_buy(Dictionary& dict, std::string username, std::string menti
         }
         if(item == "item_assoc"){
             // check to see if I can buy, need minimum one gun per assoc
+            if(valarray[3] >= 5000){
+                response = "🤫" + mention + ", we run a tight ship here, we can't just hire people willy nilly!";
+                return response;
+            }
             if(valarray[2] < amount){
                 response = "❌" + mention + " you have the cash, but you need x guns to hire x associates.\n";
                 response += "You have " + std::to_string(static_cast<int>(valarray[2])) + " guns.";

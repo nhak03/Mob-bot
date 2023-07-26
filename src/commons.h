@@ -33,12 +33,28 @@ std::string action_bal(Dictionary& dict, std::string username, std::string menti
 
 // takes a dict and a username
 // returns a response that contains the user's inventory
-std::string action_inventory(Dictionary& dict, std::string username, std::string mention);
+// if admin requested, then also shows hidden stats
+std::string action_inventory(Dictionary& dict, std::string username, std::string mention, bool admin);
 
 // takes a dict, sender, reciever, and reciever mention
 // attempts to send money from sender to reciever
 // edits both inventories directly 
 // returns a response saying if transaction went through or not
 std::string action_pay(Dictionary& dict, std::string sender, std::string recipient, double amount, std::string recip_mention);
+
+// sees if the user is able to retire
+// if minimums are met, then reset all their stats, and increase
+// [18] by 1
+std::string action_retire(Dictionary& dict, std::string username, std::string mention);
+
+/*
+Not a real function, hover to recall indexes
+0 is pocket, 1 is bank, 2 is gun, 3 is assoc
+4 is stills, 5 is moonshine, 6-9 is speaks
+10 is casino balance, 11-14 is casinos
+15 is fronts, 16 is deposit count, 17 is deposit amount before audit
+18 is wisdom
+*/
+void index_checker();
 
 #endif

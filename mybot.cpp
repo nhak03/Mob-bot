@@ -119,6 +119,7 @@ int main() {
 
         if(event.command.get_command_name() == "inventory"){
             dpp::user who = event.command.get_issuing_user();
+            bool isAdmin = false;
             if(who.username == "dajujumaster"){
                 // if admin param is selected, try to find the user
                 std::variant<monostate, string, long int, bool, dpp::snowflake, double> viewUser = event.get_parameter("admin");
@@ -126,12 +127,13 @@ int main() {
                     // if succeeded we lookup their inventory
                     dpp::snowflake temp = std::get<dpp::snowflake>(viewUser);
                     who = event.command.get_resolved_user(temp);
+                    isAdmin = true;
                 }catch(const std::bad_variant_access& ex){
                     // if fail, just look at our own
                     who = event.command.get_issuing_user();
                 }
             }
-            std::string msg = action_inventory(userDict, who.username, who.get_mention());
+            std::string msg = action_inventory(userDict, who.username, who.get_mention(), isAdmin);
             event.reply(msg);
         }
 
@@ -290,7 +292,12 @@ int main() {
             else{
                 event.reply("You do not have sufficient permissions to use this.");
             }
+        }
 
+        if(event.command.get_command_name() == "retire"){
+            dpp::user who = event.command.get_issuing_user();
+            std::string msg = action_retire(userDict, who.username, who.get_mention());
+            event.reply(msg);
         }
 
 
@@ -437,6 +444,8 @@ int main() {
                 dpp::command_option(dpp::co_number, "amount", "amount to deposit", true).
                 set_min_value(0.01)
             );
+
+            dpp::slashcommand retire("retire", "Made enough dough? Time to rest.", bot.me.id);
     
 
             std::vector<dpp::slashcommand> new_comms;
@@ -452,6 +461,7 @@ int main() {
             new_comms.push_back(roulette);
             new_comms.push_back(crash_roulette);
             new_comms.push_back(casino);
+            new_comms.push_back(retire);
 
             // bot.global_bulk_command_create(new_comms);
         }
