@@ -49,11 +49,12 @@ std::string action_bal(Dictionary& dict, std::string username, std::string menti
     return response;
 }
 
-std::string action_inventory(Dictionary& dict, std::string username, std::string mention, bool admin){
+dpp::embed action_inventory(Dictionary& dict, std::string username, std::string mention, bool admin){
     valType* valarray = getEntry(dict, username);
-    std::ostringstream output;
-    std::string pocket = doub_to_str(valarray[0]);
-    std::string bank = doub_to_str(valarray[1]);
+    dpp::embed response = dpp::embed();
+    
+    std::string pocket = "$" + doub_to_str(valarray[0]);
+    std::string bank = "$" + doub_to_str(valarray[1]);
     std::string guns = std::to_string(static_cast<int>(valarray[2]));
     std::string associates = std::to_string(static_cast<int>(valarray[3]));
     std::string stills = std::to_string(static_cast<int>(valarray[4]));
@@ -65,20 +66,33 @@ std::string action_inventory(Dictionary& dict, std::string username, std::string
     casino_tot += valarray[13]; casino_tot += valarray[14];
     std::string casinos = std::to_string(static_cast<int>(casino_tot));
     std::string fronts = std::to_string(static_cast<int>(valarray[15]));
-    std::string response = mention + "'s Inventory: ```";
-    output << std::left << std::setw(12) << "Cash: " << std::setw(15) << pocket << std::setw(15) << "Stills: " << stills << std::endl;
-    output << std::left << std::setw(12) << "Bank: " << std::setw(15) << bank << std::setw(15) << "Moonshine(L): " << moonshine << std::endl;
-    output << std::left << std::setw(12) << "Guns: " << std::setw(15) << guns << std::setw(15) << "Speaks': " << speaks << std::endl;
-    output << std::left << std::setw(12) << "Associates: " << std::setw(15) << associates << std::setw(15) << "Casinos: " << casinos << std::endl;
-    output << std::left << std::setw(12) << "Fronts: " << std::setw(15) << fronts << std::setw(15) << std::endl;
+
+    std::string title = username + "'s Inventory \\👜";
+    response.set_title(title);
+    response.set_color(dpp::colors::cinnabar);
+    response.add_field("Pocket 💵", pocket, true);
+    response.add_field("Bank 🏦", bank, true);
+    response.add_field("", "", false); // acts as a newline for embeds
+    response.add_field("Guns", guns, true);
+    response.add_field("Associates 🤝", associates, true);
+    response.add_field("", "", false);
+    response.add_field("Stills 🏺", stills, true);
+    response.add_field("Moonshine(L) 🍾", moonshine, true);
+    response.add_field("", "", false);
+    response.add_field("Speakeasies 🍻", speaks, true);
+    response.add_field("Casinos 🎰", casinos, true);
+    response.add_field("Fronts 🍝", fronts, true);
+
+    
     if(admin == true){
         std::string deposits = std::to_string(static_cast<int>(valarray[16]));
         std::string am_depod = doub_to_str(valarray[17]);
         std::string casino_bal = doub_to_str(valarray[10]);
-        output << std::left << std::setw(12) << "Deposits: " << std::setw(15) << deposits << std::setw(15) << "Deposited before audit: " << am_depod << std::endl;
-        output << std::left << std::setw(12) << "Casino Balance: " << std::setw(15) << casino_bal << std::endl;
+        response.add_field("", "", false);
+        response.add_field("Deposits", deposits, true);
+        response.add_field("Amount Deposited", am_depod, true);
+        response.add_field("Casino Balance", casino_bal, true);
     }
-    response += output.str() + "```";
     return response;
 }
 

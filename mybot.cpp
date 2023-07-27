@@ -134,8 +134,9 @@ int main() {
                     who = event.command.get_issuing_user();
                 }
             }
-            std::string msg = action_inventory(userDict, who.username, who.get_mention(), isAdmin);
-            event.reply(msg);
+            dpp::embed msg_frame = action_inventory(userDict, who.username, who.get_mention(), isAdmin);
+            dpp::message response; response.add_embed(msg_frame);
+            event.reply(response);
         }
 
         if(event.command.get_command_name() == "work"){

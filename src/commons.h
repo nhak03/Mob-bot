@@ -6,6 +6,7 @@ that accepts respective params, the dict obj, and any required usernames
 
 will also contain basic response handlers such as /bal /inventory
 */
+#include <dpp/dpp.h>
 #include <iostream>
 #include "Dictionary.h"
 
@@ -34,7 +35,7 @@ std::string action_bal(Dictionary& dict, std::string username, std::string menti
 // takes a dict and a username
 // returns a response that contains the user's inventory
 // if admin requested, then also shows hidden stats
-std::string action_inventory(Dictionary& dict, std::string username, std::string mention, bool admin);
+dpp::embed action_inventory(Dictionary& dict, std::string username, std::string mention, bool admin);
 
 // takes a dict, sender, reciever, and reciever mention
 // attempts to send money from sender to reciever
