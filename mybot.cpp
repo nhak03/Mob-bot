@@ -9,6 +9,7 @@
 #include "src/action_work.h"
 #include "src/action_buy.h"
 #include "src/action_gamble.h"
+#include "src/action_sell.h"
 
 #include <thread>
 using namespace std;
@@ -269,6 +270,19 @@ int main() {
             event.reply(msg);
         }
 
+        if(event.command.get_command_name() == "sell"){
+            dpp::user who = event.command.get_issuing_user();
+            std::string product = std::get<std::string>(event.get_parameter("product"));
+            double volume = std::get<double>(event.get_parameter("volume"));
+
+            // dpp::embed sample = dpp::embed();
+            // sample.set_title("Sample title");
+            dpp::message hello;
+            dpp::embed sample = action_sell(userDict, who.username, product, volume);
+            hello.add_embed(sample); 
+            event.reply(hello);
+        }
+
         if(event.command.get_command_name() == "edit"){
             dpp::user who = event.command.get_issuing_user();
             if(who.username == "dajujumaster"){
@@ -389,7 +403,15 @@ int main() {
                 dpp::command_option(dpp::co_number, "amount", "amount to set to", true)
             );
 
-            dpp::slashcommand sell("sell", "offload your moonshine", bot.me.id);
+            dpp::slashcommand sell("sell", "offload your goods", bot.me.id);
+            sell.add_option(
+                dpp::command_option(dpp::co_string, "product", "what goods to sell", true).
+                add_choice(dpp::command_option_choice("Moonshine", std::string("item_moonshine")))
+            );
+            sell.add_option(
+                dpp::command_option(dpp::co_number, "volume", "how much product is being sold", true).
+                set_min_value(10.00)
+            );
 
             dpp::slashcommand roulette("roulette", "play a game of roulette", bot.me.id);
             roulette.add_option(
@@ -462,8 +484,9 @@ int main() {
             new_comms.push_back(crash_roulette);
             new_comms.push_back(casino);
             new_comms.push_back(retire);
+            new_comms.push_back(sell);
 
-            // bot.global_bulk_command_create(new_comms);
+            bot.global_bulk_command_create(new_comms);
         }
     });
     
