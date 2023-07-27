@@ -274,13 +274,8 @@ int main() {
             dpp::user who = event.command.get_issuing_user();
             std::string product = std::get<std::string>(event.get_parameter("product"));
             double volume = std::get<double>(event.get_parameter("volume"));
-
-            // dpp::embed sample = dpp::embed();
-            // sample.set_title("Sample title");
-            dpp::message hello;
-            dpp::embed sample = action_sell(userDict, who.username, product, volume);
-            hello.add_embed(sample); 
-            event.reply(hello);
+            std::string msg = action_sell(userDict, who.username, product, volume);
+            event.reply(msg);
         }
 
         if(event.command.get_command_name() == "edit"){
