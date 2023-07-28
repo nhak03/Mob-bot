@@ -13,6 +13,8 @@ dpp::embed action_shop(){
     dpp::embed response = dpp::embed();
 
     response.set_title("What Cash Buys 💸");
+    response.set_color(dpp::colors::cinnabar);
+    
     std::string gun = "$" + doub_to_str(gun_price);
     response.add_field("Guns", gun, true);
     std::string assoc = "$" + doub_to_str(assoc_price) + " & " + " 1 Gun";
