@@ -4,6 +4,10 @@
 #ifndef ACTION_BUY
 #define ACTION_BUY
 
+// returns an embed showing a shop
+// takes no parameters, as no data needs to be edited
+dpp::embed action_shop();
+
 // inputs: dictionary, username, mention, item-name, amount to buy
 // returns a string based on whether buy was successful
 // edits the user inventory directly

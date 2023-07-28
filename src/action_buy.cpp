@@ -9,6 +9,34 @@ const double speak_price = 2000.00;
 const double casino_price = 15000.00;
 const double front_price = 20000.00;
 
+dpp::embed action_shop(){
+    dpp::embed response = dpp::embed();
+
+    response.set_title("What Cash Buys 💸");
+    std::string gun = "$" + doub_to_str(gun_price);
+    response.add_field("Guns", gun, true);
+    std::string assoc = "$" + doub_to_str(assoc_price) + " & " + " 1 Gun";
+    response.add_field("Associates 🤝", assoc, true);
+
+    response.add_field("", "", false);
+    std::string still = "$" + doub_to_str(still_price) + " & " + "2 Associates";
+    response.add_field("Stills 🏺", still, true);
+    std::string shine = "$" + doub_to_str(shine_price);
+    response.add_field("Moonshine 🍾", shine, true);
+
+    response.add_field("", "", false);
+    std::string speak = "$" + doub_to_str(speak_price) + " & " + "25 Associates";
+    std::string casino = "$" + doub_to_str(casino_price) + " & " + "25 Associates";
+    response.add_field("Speakeasies 🍻", speak, true);
+    response.add_field("Casinos 🎰", casino, true);
+
+    response.add_field("", "", false);
+    std::string front = "$" + doub_to_str(front_price) + " & " + "10 Associates";
+    response.add_field("Fronts 🍝", front, true);
+    
+    return response;
+}
+
 double calc_cost(std::string item, int64_t amount){
     double total_cost = 0;
     if(item == "item_gun"){

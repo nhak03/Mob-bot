@@ -310,6 +310,12 @@ int main() {
             event.reply(msg);
         }
 
+        if(event.command.get_command_name() == "shop"){
+            dpp::embed msg_frame = action_shop();
+            dpp::message response; response.add_embed(msg_frame);
+            event.reply(response);
+        }
+
 
     });
  
@@ -464,6 +470,8 @@ int main() {
             );
 
             dpp::slashcommand retire("retire", "Made enough dough? Time to rest.", bot.me.id);
+
+            dpp::slashcommand shop("shop", "Displays what money and manpower can buy.", bot.me.id);
     
 
             std::vector<dpp::slashcommand> new_comms;
@@ -481,6 +489,7 @@ int main() {
             new_comms.push_back(casino);
             new_comms.push_back(retire);
             new_comms.push_back(sell);
+            new_comms.push_back(shop);
 
             bot.global_bulk_command_create(new_comms);
         }

@@ -82,7 +82,6 @@ dpp::embed action_inventory(Dictionary& dict, std::string username, std::string 
     response.add_field("Speakeasies 🍻", speaks, true);
     response.add_field("Casinos 🎰", casinos, true);
     response.add_field("Fronts 🍝", fronts, true);
-
     
     if(admin == true){
         std::string deposits = std::to_string(static_cast<int>(valarray[16]));

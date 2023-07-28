@@ -3,6 +3,8 @@
 #include <cstdlib>
 #include "action_work.h"
 
+// inclusion of wisdom boost
+
 const double speak_cost = 2.32; // liters
 const double speak_rate = 25.00; 
 // above is avg consumption per hour assuming base of 17 patrons
