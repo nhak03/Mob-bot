@@ -66,6 +66,7 @@ dpp::embed action_inventory(Dictionary& dict, std::string username, std::string 
     casino_tot += valarray[13]; casino_tot += valarray[14];
     std::string casinos = std::to_string(static_cast<int>(casino_tot));
     std::string fronts = std::to_string(static_cast<int>(valarray[15]));
+    std::string wisdom = std::to_string(static_cast<int>(valarray[18]));
 
     std::string title = username + "'s Inventory \\👜";
     response.set_title(title);
@@ -81,7 +82,9 @@ dpp::embed action_inventory(Dictionary& dict, std::string username, std::string 
     response.add_field("", "", false);
     response.add_field("Speakeasies 🍻", speaks, true);
     response.add_field("Casinos 🎰", casinos, true);
+    response.add_field("", "", false);
     response.add_field("Fronts 🍝", fronts, true);
+    response.add_field("Wisdom 📖", wisdom, true);
     
     if(admin == true){
         std::string deposits = std::to_string(static_cast<int>(valarray[16]));
@@ -162,3 +165,11 @@ std::string action_retire(Dictionary& dict, std::string username, std::string me
     return msg;
 }
 
+double apply_wisdom(valType* userArr){
+    if(userArr[18] < 1){
+        return 1;
+    }
+    // each wisdom gives 10% boost
+    double boost = 0.10 * userArr[18];
+    return boost;
+}

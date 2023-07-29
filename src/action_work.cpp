@@ -48,6 +48,12 @@ double speak_revenue(valType* userArr){
     // otherwise we have enough to operate;
     revenue = (userArr[6] * base_speak_rev) + (userArr[7] * t1_speak_rev);
     revenue += (userArr[8] * t2_speak_rev) + (userArr[9] * t3_speak_rev);
+    double boost;
+    boost = userArr[18] * 0.10;
+    if(boost < 1){
+        boost = 1;
+    }
+    revenue = revenue * boost;
     userArr[5] -= alc_cost;
     userArr[0] += revenue;
     // calculate revenue and return it;
@@ -112,7 +118,7 @@ std::string action_work(Dictionary& dict, std::string username, std::string ment
     valType* valarray = getEntry(dict, username);
     std::string msg;
     if(labor_type == "default"){
-        valarray[0] += min_wage;
+        valarray[0] += (min_wage * apply_wisdom(valarray));
         msg = "✅ You've earned $`" + doub_to_str(min_wage) + "`\n";
         msg += "💵 You have $`" + doub_to_str(valarray[0]) + "` in earnings!";
     }
@@ -151,9 +157,10 @@ std::string action_work(Dictionary& dict, std::string username, std::string ment
             msg = "You have no casinos to operate.";
             return msg;
         }
+        double boost = apply_wisdom(valarray);
         msg = "💸🎰🎲👑🃏💸\n";
-        msg += "You've earned $`" + doub_to_str(resArray[0]) + "` in revenue from your casinos!";
-        valarray[0] += resArray[0];
+        msg += "You've earned $`" + doub_to_str((resArray[0] * boost)) + "` in revenue from your casinos!";
+        valarray[0] += (resArray[0] * boost);
         if(resArray[1] > 1.00){
             msg += "\nRevenue multiplier: `" + doub_to_str(resArray[1]) + "` || ";
             msg += "Alcohol consumed(L): `" + doub_to_str(resArray[2]) + "`";

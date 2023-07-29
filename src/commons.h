@@ -49,6 +49,13 @@ std::string action_pay(Dictionary& dict, std::string sender, std::string recipie
 std::string action_retire(Dictionary& dict, std::string username, std::string mention);
 
 /*
+an income multiplier based on wisdom
+inside functions that retrieve arrays already
+returns 1 by default if no wisdom
+*/
+double apply_wisdom(valType* userArr);
+
+/*
 Not a real function, hover to recall indexes
 0 is pocket, 1 is bank, 2 is gun, 3 is assoc
 4 is stills, 5 is moonshine, 6-9 is speaks
