@@ -49,7 +49,7 @@ double speak_revenue(valType* userArr){
     revenue = (userArr[6] * base_speak_rev) + (userArr[7] * t1_speak_rev);
     revenue += (userArr[8] * t2_speak_rev) + (userArr[9] * t3_speak_rev);
     double boost;
-    boost = userArr[18] * 0.10;
+    boost = userArr[18] * 0.10 + 1;
     if(boost < 1){
         boost = 1;
     }

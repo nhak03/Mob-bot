@@ -170,6 +170,6 @@ double apply_wisdom(valType* userArr){
         return 1;
     }
     // each wisdom gives 10% boost
-    double boost = 0.10 * userArr[18];
+    double boost = 0.10 * userArr[18] + 1;
     return boost;
 }
