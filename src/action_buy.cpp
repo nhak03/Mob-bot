@@ -140,7 +140,7 @@ std::string action_buy(Dictionary& dict, std::string username, std::string menti
         }
         if(item == "item_assoc"){
             // check to see if I can buy, need minimum one gun per assoc
-            if(valarray[3] >= 5000){
+            if((valarray[3] + amount) >= 5000){
                 response = "🤫" + mention + ", we run a tight ship here, we can't just hire people willy nilly!";
                 return response;
             }

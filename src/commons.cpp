@@ -10,7 +10,7 @@ void createEntry(Dictionary& dict, std::string username){
     valType* inventory = dict.getArray(username);
     // inventory at getArray call is an array of x size,
     // with each index uninitialized
-    for(int i=0; i<15; i++){
+    for(int i=0; i<20; i++){
         inventory[i] = 0;
     }
     // after this for loop, the player array is now able 
