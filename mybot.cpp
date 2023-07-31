@@ -292,7 +292,8 @@ int main() {
                     event.reply("Could not find that user");
                     return;
                 }
-                valType* valarray = userDict.getArray(who.username);
+                // valType* valarray = userDict.getArray(who.username);
+                valType* valarray = getEntry(who.username);
                 double old_val = valarray[param];
                 valarray[param] = amount;
                 std::string response = "Changed " + who.get_mention() + "[" + to_string(param) + "]" + " from ";
