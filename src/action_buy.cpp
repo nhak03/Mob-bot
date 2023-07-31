@@ -260,7 +260,7 @@ std::string action_upgrade(Dictionary& dict, std::string username, std::string b
                 userArr[0] = 0;
                 userArr[1] -= t1_cost;
             }
-            userArr[t1] += 1; userArr[base] -= 1;
+            userArr[t1] += 1; userArr[base] -= 1; userArr[3] -= 50;
             msg = "✅You have successfully added increased seating to this " + business;
             return msg; 
         }else{
@@ -289,7 +289,7 @@ std::string action_upgrade(Dictionary& dict, std::string username, std::string b
                 userArr[0] = 0;
                 userArr[1] -= t2_cost;
             }
-            userArr[t2] += 1; userArr[t1] -= 1;
+            userArr[t2] += 1; userArr[t1] -= 1; userArr[3] -= 50;
             msg = "✅You now serve higher quality liquor at this " + business;
             return msg; 
         }else{
@@ -318,7 +318,7 @@ std::string action_upgrade(Dictionary& dict, std::string username, std::string b
                 userArr[0] = 0;
                 userArr[1] -= t3_cost;
             }
-            userArr[t3] += 1; userArr[t2] -=1;
+            userArr[t3] += 1; userArr[t2] -=1; userArr[3] -= 50;
             msg = "✅With extra guards stationed here, you can handle more revenue at this " + business;
             return msg; 
         }else{

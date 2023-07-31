@@ -266,6 +266,7 @@ std::string action_crash(Dictionary& dict, std::string player, double bet, doubl
             return msg; 
         }else{
             // win
+            playerArr[0] -= bet; // doesn't matter if neg or not since it will be given back
             double winnings = bet * guess;
             playerArr[0] += winnings;
             msg = "🚀~~~>✨🎆\n";
