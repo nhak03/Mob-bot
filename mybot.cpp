@@ -49,7 +49,7 @@ int main() {
     string line;
     string tokenBuffer;
     string token;
-    string delim = " \t\\\"\',<>/?;:[{]}|`~!@%#$^&*()_=+";
+    string delim = " \t\\\"\',<>/?;:[{]}|`~!@%#$^&*()=+";
     Dictionary userDict;
 
     try{
