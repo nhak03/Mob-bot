@@ -122,13 +122,15 @@ std::string still_raid(valType* valarray){
     if(valarray[4] <= 5){
         return "pass";
     }
+
+    return "pass";
 }
 
 std::string action_work(Dictionary& dict, std::string username, std::string mention, std::string labor_type){
     valType* valarray = getEntry(dict, username);
     std::string msg;
     if(labor_type == "default"){
-        double check = (min_wage * apply_wisdom(valarray))
+        double check = (min_wage * apply_wisdom(valarray));
         valarray[0] += check;
         msg = "✅ You've earned $`" + doub_to_str(check) + "`\n";
         msg += "💵 You have $`" + doub_to_str(valarray[0]) + "` in earnings!";
