@@ -157,7 +157,7 @@ std::string action_roulette(Dictionary& dict, std::string player, double bet, st
         else{
             msg = roulette_loss_msg(color);
             msg += "\nYou lost $`" + doub_to_str(bet) + "` in that roulette spin.";
-            if(bet - playerArr[0] < 0){
+            if(playerArr[0] - bet < 0){
                 //pay from pocket and then bank
                 bet -= playerArr[0];
                 playerArr[0] = 0;
