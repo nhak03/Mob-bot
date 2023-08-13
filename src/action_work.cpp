@@ -126,11 +126,24 @@ std::string still_raid(valType* valarray){
     return "pass";
 }
 
+// returns an additive to min-wage depending on how many associates a user has
+double assoc_bonus(double assoc){
+    if(assoc > 0){
+        double bonus = 1.00;
+        bonus *= (assoc / 2);
+        if(bonus > 5.00){
+            bonus = 5.00;
+        }
+        return bonus;
+    }
+    return 0;
+}
+
 std::string action_work(Dictionary& dict, std::string username, std::string mention, std::string labor_type){
     valType* valarray = getEntry(dict, username);
     std::string msg;
     if(labor_type == "default"){
-        double check = (min_wage * apply_wisdom(valarray));
+        double check = (min_wage + assoc_bonus(valarray[3])) * apply_wisdom(valarray);
         valarray[0] += check;
         msg = "✅ You've earned $`" + doub_to_str(check) + "`\n";
         msg += "💵 You have $`" + doub_to_str(valarray[0]) + "` in earnings!";
