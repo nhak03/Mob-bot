@@ -3,7 +3,7 @@
 #include "action_buy.h"
 const double gun_price = 30.00;
 const double assoc_price = 30.00;
-const double still_price = 250.00;
+const double still_price = 100.00;
 const double shine_price = 5.00;
 const double speak_price = 2000.00;
 const double casino_price = 15000.00;
